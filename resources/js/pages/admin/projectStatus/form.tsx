@@ -26,7 +26,7 @@ export default function AdminProjectStatusForm({ projectStatus, flash }: AdminPr
         e.preventDefault();
 
         if (isEdit) {
-            put(update({ projectStatus: projectStatus!.id }).url);
+            put(update({ projectStatus: projectStatus?.id }).url);
         } else {
             post(store().url);
         }

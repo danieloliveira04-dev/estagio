@@ -87,6 +87,10 @@ export default function AdminTemplateForm({ template, taskStatus, flash }: Admin
                             }
                             status={taskStatus}
                         />
+                        
+                        {errors.columns && (
+                            <InputError message={errors.columns} className="mt-1" />
+                        )}
                     </div>
 
                     <div className="flex items-center gap-4 mt-6">

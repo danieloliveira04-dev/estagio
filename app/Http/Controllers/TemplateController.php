@@ -38,12 +38,24 @@ class TemplateController extends Controller
     }
 
     public function update(Request $request, Template $template): RedirectResponse {
-        $validated = $request->validate([
+        $validator = \Validator::make($request->all(), [
             'name' => 'required|string|min:3|max:45|unique:templates,name,' . $template->id,
             'columns' => 'array|min:1',
             'columns.*.name' => 'required|string|max:45',
             'columns.*.taskStatusId' => 'nullable|exists:tasksStatus,id',
         ]);
+
+        $validator->after(function ($validator) use ($request) {
+            if ($request->filled('columns')) {
+                $names = array_column($request->columns, 'name');
+
+                if (count($names) !== count(array_unique($names))) {
+                    $validator->errors()->add('columns', 'Os nomes das colunas não podem se repetir.');
+                }
+            }
+        });
+
+        $validated = $validator->validate();
 
         try {
 
@@ -118,12 +130,24 @@ class TemplateController extends Controller
     }
 
     public function store(Request $request): RedirectResponse {
-        $validated = $request->validate([
+        $validator = \Validator::make($request->all(), [
             'name' => 'required|string|min:3|max:45|unique:templates,name',
             'columns' => 'array|min:1',
             'columns.*.name' => 'required|string|max:45',
             'columns.*.taskStatusId' => 'nullable|exists:tasksStatus,id',
         ]);
+
+        $validator->after(function ($validator) use ($request) {
+            if ($request->filled('columns')) {
+                $names = array_column($request->columns, 'name');
+
+                if (count($names) !== count(array_unique($names))) {
+                    $validator->errors()->add('columns', 'Os nomes das colunas não podem se repetir.');
+                }
+            }
+        });
+
+        $validated = $validator->validate();
 
         try {
 

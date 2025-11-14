@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Symfony\Component\Translation\Dumper\FileDumper;
 
 class ProjectStatusController extends Controller
 {
@@ -33,16 +34,16 @@ class ProjectStatusController extends Controller
         ]);
     }
 
-    public function update(ProjectStatus $status, Request $request): RedirectResponse {
+    public function update(ProjectStatus $projectStatus, Request $request): RedirectResponse {
         $request->validate([
-            'name' => 'required|string|max:45|unique:projectsStatus,name,' . $status->id,
+            'name' => 'required|string|max:45|unique:projectsStatus,name,' . $projectStatus->id,
         ]);
 
         $input = $request->only(['name']);
 
         try {
 
-            $status->fill($input)->save();
+            $projectStatus->fill($input)->save();
 
             return redirect()
                 ->route('admin.projectStatus.list')
