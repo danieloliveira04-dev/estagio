@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "93bf4e171b4a23d6a03efdc6d8558309",
+    "content-hash": "9d335abefb7422a65b979c898b0c465e",
     "packages": [
         {
             "name": "brick/math",
@@ -3407,6 +3407,53 @@
                 "source": "https://github.com/ramsey/uuid/tree/4.9.0"
             },
             "time": "2025-06-25T14:20:11+00:00"
+        },
+        {
+            "name": "sofa/eloquence",
+            "version": "v0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jarektkaczyk/eloquence.git",
+                "reference": "b204368272301e7d1dea350d98d43a0a668bbbf1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jarektkaczyk/eloquence/zipball/b204368272301e7d1dea350d98d43a0a668bbbf1",
+                "reference": "b204368272301e7d1dea350d98d43a0a668bbbf1",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4"
+            },
+            "require-dev": {
+                "illuminate/database": "~5.0",
+                "phpunit/phpunit": "~4.0",
+                "squizlabs/php_codesniffer": "~2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Sofa\\Eloquence\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jarek Tkaczyk",
+                    "email": "jarek@softonsofa.com",
+                    "homepage": "http://softonsofa.com/",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Extensions for the Eloquent ORM.",
+            "support": {
+                "issues": "https://github.com/jarektkaczyk/eloquence/issues",
+                "source": "https://github.com/jarektkaczyk/eloquence/tree/v0.1"
+            },
+            "time": "2015-03-19T02:23:51+00:00"
         },
         {
             "name": "symfony/clock",

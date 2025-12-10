@@ -9,6 +9,14 @@ class Project extends Model
 {
     use SoftDeletes;
 
+    protected $fillable = ['id', 'name', 'description', 'projectStatusId', 'expectedEndAt', 'finishedAt', 'closeReason'];
+    
+    //--
+
+    public function projectStatus() {
+        return $this->belongsTo(ProjectStatus::class, 'projectStatusId');
+    }
+
     public function members() {
         return $this->hasMany(ProjectMember::class, 'projectId');
     }

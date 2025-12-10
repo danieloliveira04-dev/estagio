@@ -16,5 +16,6 @@ class ProjectStatusSeeder extends Seeder
         ProjectStatus::create(['name' => 'Desenvolvimento']);
         ProjectStatus::create(['name' => 'Homologação']);
         ProjectStatus::create(['name' => 'Produção']);
+        ProjectStatus::create(['name' => 'Encerrado']);
     }
 }

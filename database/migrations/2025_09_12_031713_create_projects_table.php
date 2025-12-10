@@ -16,6 +16,9 @@ return new class extends Migration
             $table->string('name', 120);
             $table->text('description')->nullable();
             $table->foreignId('projectStatusId')->constrained('projectsStatus');
+            $table->dateTime('expectedEndAt')->nullable();
+            $table->dateTime('finishedAt')->nullable();
+            $table->text('closeReason')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -25,8 +28,6 @@ return new class extends Migration
             $table->foreignId('userId')->constrained('users');
             $table->foreignId('roleId')->constrained('roles');
             $table->string('description', 225)->nullable();
-            $table->dateTime('expectedEndAt')->nullable();
-            $table->dateTime('finishedAt')->nullable();
             $table->timestamps();
             $table->softDeletes();
 

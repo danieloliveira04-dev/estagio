@@ -1,0 +1,212 @@
+import { useState } from "react";
+import Flash from "@/components/flash";
+import Heading from "@/components/heading";
+import InputError from "@/components/input-error";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import AppLayout from "@/layouts/app-layout";
+import { list, store, update } from "@/routes/admin/projects";
+import { BreadcrumbItem, FlashType, Project, ProjectStatus, Template } from "@/types";
+import { Head, Link, useForm } from "@inertiajs/react";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, LoaderCircle } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { formatDate } from "@/lib/utils";
+
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from "@/components/ui/command";
+
+interface AdminProjectFormProps {
+    project?: Project;
+    flash?: FlashType;
+    projectStatus: ProjectStatus[];
+    templates: Template[];
+}
+
+export default function AdminProjectForm({
+    project,
+    flash,
+    projectStatus,
+    templates
+}: AdminProjectFormProps) {
+    const isEdit = !!project;
+
+    const { data, setData, post, put, errors, processing } = useForm({
+        name: project?.name || "",
+        description: project?.description || "",
+        projectStatusId: project?.projectStatusId || "",
+        expectedEndAt: project?.expectedEndAt || "",
+        templateId: "",
+    });
+
+    const submit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (isEdit) {
+            put(update({ project: project.id }).url);
+        } else {
+            post(store().url);
+        }
+    };
+
+    // Local states para popovers
+    const [openTemplate, setOpenTemplate] = useState(false);
+    const selectedTemplate = templates.find((t) => t.id === Number(data.templateId));
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: "Projetos", href: list().url },
+        { title: isEdit ? "Editar projeto" : "Novo projeto", href: "" },
+    ];
+
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title={isEdit ? "Editar projeto" : "Novo projeto"} />
+
+            <div className="px-4 py-6">
+                <Heading title={isEdit ? "Editar projeto" : "Novo projeto"} />
+                <Flash flash={flash} className="mb-6" />
+
+                <form onSubmit={submit}>
+                    <div className="grid grid-cols-1 gap-6">
+                        {/* Nome */}
+                        <div className="space-y-2">
+                            <Label htmlFor="name">Nome *</Label>
+                            <Input
+                                id="name"
+                                required
+                                placeholder="Nome do projeto"
+                                value={data.name}
+                                onChange={(e) => setData("name", e.target.value)}
+                            />
+                            <InputError message={errors.name} />
+                        </div>
+
+                        {/* Descrição */}
+                        <div className="space-y-2">
+                            <Label htmlFor="description">Descrição</Label>
+                            <Textarea
+                                id="description"
+                                placeholder="Descrição do projeto"
+                                value={data.description}
+                                onChange={(e) => setData("description", e.target.value)}
+                            />
+                            <InputError message={errors.description} />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6">
+                            {/* Status */}
+                            <div className="space-y-2">
+                                <Label>Status *</Label>
+                                <Select
+                                    value={String(data.projectStatusId)}
+                                    onValueChange={(v) => setData("projectStatusId", Number(v))}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {projectStatus.map((s) => (
+                                            <SelectItem key={s.id} value={String(s.id)}>
+                                                {s.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.projectStatusId} />
+                            </div>
+
+                            {/* Data */}
+                            <div className="space-y-2">
+                                <Label>Prazo</Label>
+                                <Input
+                                    className="block"
+                                    type="date"
+                                    min={formatDate(new Date(), "yyyy-MM-dd")}
+                                    value={data.expectedEndAt ? formatDate(data.expectedEndAt, "yyyy-MM-dd") : ""}
+                                    onChange={(e) => setData("expectedEndAt", e.target.value + ' 00:00:00')}
+                                />
+                                <InputError message={errors.expectedEndAt} />
+                            </div>
+
+                            {/* Modelo inicial */}
+                            {!isEdit && (
+                                <div className="space-y-2">
+                                    <Label>Modelo inicial</Label>
+
+                                    <Popover open={openTemplate} onOpenChange={setOpenTemplate}>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className="w-full justify-start"
+                                            >
+                                                {selectedTemplate ? selectedTemplate.name : "Selecionar modelo"}
+                                            </Button>
+                                        </PopoverTrigger>
+
+                                        <PopoverContent className="p-0" side="bottom" align="start">
+                                            <Command>
+                                                <CommandInput placeholder="Buscar modelo..." />
+                                                <CommandList>
+                                                    <CommandEmpty>Nenhum modelo encontrado.</CommandEmpty>
+                                                    <CommandGroup>
+                                                        {templates.map((tpl) => (
+                                                            <CommandItem
+                                                                key={tpl.id}
+                                                                onSelect={() => {
+                                                                    setData("templateId", String(tpl.id));
+                                                                    setOpenTemplate(false);
+                                                                }}
+                                                            >
+                                                                {tpl.name}
+                                                            </CommandItem>
+                                                        ))}
+                                                    </CommandGroup>
+                                                </CommandList>
+                                            </Command>
+                                        </PopoverContent>
+                                    </Popover>
+
+                                    <InputError message={errors.templateId} />
+                                </div>
+                            )}
+
+                            {project?.closeReason && (
+                                <div className="space-y-2">
+                                    <p className="text-sm font-medium">Motivo do encerramento:</p>
+                                    <p className="text-muted-foreground">
+                                        {project.closeReason}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Ações */}
+                    <div className="flex items-center gap-4 mt-6">
+                        <Button type="submit">
+                            {processing && <LoaderCircle size={16} className="animate-spin" />}
+                            {isEdit ? "Salvar" : "Criar"}
+                        </Button>
+
+                        <Button variant="outline" asChild>
+                            <Link href={list().url}>
+                                <ChevronLeft size={16} /> Voltar
+                            </Link>
+                        </Button>
+                    </div>
+                </form>
+            </div>
+        </AppLayout>
+    );
+}

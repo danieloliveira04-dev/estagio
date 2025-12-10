@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectStatusController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TagController;
@@ -146,5 +147,27 @@ Route::prefix('admin')->middleware('auth')->group(function () {
 
     Route::delete('templates/{template}', [TemplateController::class, 'delete'])
         ->name('admin.templates.delete');
+
+    //Project
+    Route::get('projects', [ProjectController::class, 'index'])
+        ->name('admin.projects.list');
+
+    Route::get('projects/create', [ProjectController::class, 'form'])
+        ->name('admin.projects.form');
+
+    Route::post('projects/store', [ProjectController::class, 'store'])
+        ->name('admin.projects.store');
+
+    Route::get('projects/getDetails/{id}', [ProjectController::class, 'getDetails'])
+        ->name('admin.projects.getDetails');
+
+    Route::get('projects/{project}', [ProjectController::class, 'edit'])
+        ->name('admin.projects.edit');
+
+    Route::put('projects/{project}', [ProjectController::class, 'update'])
+        ->name('admin.projects.update');
+
+    Route::post('projects/{project}/terminate', [ProjectController::class, 'terminate'])
+        ->name('admin.projects.terminate');
     
 });

@@ -6,8 +6,6 @@ use App\Events\UserStatusChanged;
 use App\Jobs\SendQueuedEmail;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 
 class NotifyProjectManagers
 {

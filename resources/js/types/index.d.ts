@@ -76,9 +76,14 @@ export interface Project {
     name: string;
     description?: string;
     projectStatusId: number;
+    expectedEndAt?: Date;
+    finishedAt?: Date;
+    closeReason?: string;
     created_at: string;
     updated_at: string;
     deleted_at?: string;
+
+    project_status?: ProjectStatus;
 };
 
 export interface Invitation {

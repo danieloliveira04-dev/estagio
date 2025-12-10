@@ -5,7 +5,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, LayoutTemplate, ListChecks, Tags, User, UserCog } from 'lucide-react';
+import { BookOpen, Folder, FolderKanban, LayoutGrid, LayoutTemplate, ListChecks, Tags, User, UserCog } from 'lucide-react';
 import AppLogo from './app-logo';
 import users from '@/routes/admin/users';
 import roles from '@/routes/admin/roles';
@@ -13,6 +13,7 @@ import taskStatus from '@/routes/admin/taskStatus';
 import projectStatus from '@/routes/admin/projectStatus';
 import tags from '@/routes/admin/tags';
 import templates from '@/routes/admin/templates';
+import projects from '@/routes/admin/projects';
 
 const mainNavItems: NavItem[] = [
     {
@@ -50,6 +51,11 @@ const mainNavItems: NavItem[] = [
         title: 'Modelos',
         href: templates.list().url,
         icon: LayoutTemplate,
+    },
+    {
+        title: 'Projetos',
+        href: projects.list().url,
+        icon: FolderKanban,
     }
 ];
 
