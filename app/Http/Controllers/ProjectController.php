@@ -18,7 +18,7 @@ class ProjectController extends Controller
 
         $projects = Project::query()
             ->when($search, function ($query, $search) {
-                $query->where('name', 'link', "%{$search}%");
+                $query->where('name', 'like', "%{$search}%");
             })
             ->with(['projectStatus'])
             // ->whereNot('projectStatusId', env('projectStatusClosedId'))
@@ -53,7 +53,7 @@ class ProjectController extends Controller
             'name' => 'required|string|min:3|max:120',
             // 'description' => 'nullable|string|max:500',
             'projectStatusId' => 'nullable|integer|exists:projectsStatus,id',
-            'expectedEndAt' => 'nullable|date|before_or_equal:today',
+            'expectedEndAt' => 'nullable|date|after_or_equal:today',
         ]);
 
         $input = $request->all();
