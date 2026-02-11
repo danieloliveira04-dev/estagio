@@ -13,7 +13,7 @@ class TaskStatusSeeder extends Seeder
      */
     public function run(): void
     {
-        $statuses = ['A Fazer', 'Em Andamento', 'Concluída'];
+        $statuses = ['A Fazer', 'Em Andamento', 'Concluída', 'Cancelado'];
 
         foreach ($statuses as $status) {
             TaskStatus::firstOrCreate(['name' => $status]);

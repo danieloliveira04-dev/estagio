@@ -9,4 +9,17 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Task extends Model
 {
     use HasFactory, SoftDeletes;
+
+    protected $table = 'tasks';
+
+    protected $fillable = ['id', 'title', 'description', 'startDate', 'endDate', 'projectId', 'taskStatusId'];
+
+    public function taskStatus() {
+        return $this->hasOne(TaskStatus::class, 'id', 'taskStatusId');
+    }
+
+    public function taskHistory() {
+        return $this->hasMany(TaskHistory::class, 'taskId');
+    }
+
 }

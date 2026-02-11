@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Events\ProjectClosed;
 use App\Helpers\LogHelper;
 use App\Models\Project;
+use App\Models\TaskHistory;
 use Illuminate\Http\Request;
 use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use DB;
 
 class ProjectController extends Controller
 {
@@ -43,15 +45,16 @@ class ProjectController extends Controller
 
         return Inertia::render('admin/projects/form', [
             'project' => $project,
-            'projectStatus' => \App\Models\ProjectStatus::get(),
+            'projectStatus' => \App\Models\ProjectStatus::whereNot('id', env('projectStatusClosedId'))->get(),
             'templates' => \App\Models\Template::get(),
         ]);
     }
 
     public function update(Project $project, Request $request): RedirectResponse {
+
         $request->validate([
             'name' => 'required|string|min:3|max:120',
-            // 'description' => 'nullable|string|max:500',
+            'description' => 'nullable|string|max:500',
             'projectStatusId' => 'nullable|integer|exists:projectsStatus,id',
             'expectedEndAt' => 'nullable|date|after_or_equal:today',
         ]);
@@ -112,13 +115,32 @@ class ProjectController extends Controller
 
         try {
 
-            $project->fill([
+            DB::beginTransaction();
+
+            $project->update([
                 'projectStatusId' => env('projectStatusClosedId'),
                 'closeReason' => $closeReason,
             ]);
 
-            $project->save();
+            $tasks = $project->tasks()->getQuery()
+                ->where('taskStatusId', '!=', env('taskStatusCompletedId'))
+                ->get();
 
+            foreach($tasks as $task) {
+                $task->update([
+                    'taskStatusId' => env('taskStatusCanceledId'),
+                ]);
+
+                $task->taskHistory()->create([
+                    'taskStatusId' => $task->taskStatusId,
+                    'userId' => $request->user()->id,
+                    'action' => TaskHistory::ACTION_STATUS_CHANGED,
+                    'description' => 'Tarefa cancelada automaticamente devido ao encerramento do projeto.',
+                ]);
+            }
+
+            DB::commit();
+            
             event(new ProjectClosed($project));
 
             return redirect()
@@ -129,6 +151,8 @@ class ProjectController extends Controller
                 ]);
             
         } catch (\Exception $ex) {
+            DB::rollBack();
+
             LogHelper::exception($ex);
 
             $msg = 'Ocorreu um erro ao tentar salvar os dados.';
@@ -146,7 +170,7 @@ class ProjectController extends Controller
 
     public function form(): Response {
         return Inertia::render('admin/projects/form', [
-            'projectStatus' => \App\Models\ProjectStatus::get(),
+            'projectStatus' => \App\Models\ProjectStatus::whereNot('id', env('projectStatusClosedId'))->get(),
             'templates' => \App\Models\Template::get(),
         ]);
     }
@@ -154,7 +178,7 @@ class ProjectController extends Controller
     public function store(Request $request): RedirectResponse {
         $request->validate([
             'name' => 'required|string|min:3|max:120',
-            // 'description' => 'nullable|string|max:500',
+            'description' => 'nullable|string|max:500',
             'projectStatusId' => 'nullable|integer|exists:projectsStatus,id',
             'expectedEndAt' => 'nullable|date|after_or_equal:today',
             'templateId' => 'nullable|integer|exists:templates,id',
