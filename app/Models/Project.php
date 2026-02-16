@@ -9,9 +9,13 @@ class Project extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['id', 'name', 'description', 'projectStatusId', 'expectedEndAt', 'finishedAt', 'closeReason'];
+    protected $fillable = ['id', 'name', 'description', 'customerUserId', 'projectStatusId', 'expectedEndAt', 'finishedAt', 'closeReason'];
     
     //--
+
+    public function customer() {
+        return $this->belongsTo(User::class, 'customerUserId');
+    }
 
     public function projectStatus() {
         return $this->belongsTo(ProjectStatus::class, 'projectStatusId');

@@ -27,6 +27,8 @@ import {
     CommandItem,
     CommandList,
 } from "@/components/ui/command";
+import { ComboboxUsers } from "@/components/combobox-users";
+import { ComboboxUser } from "@/components/combobox-user";
 
 interface AdminProjectFormProps {
     project?: Project;
@@ -46,6 +48,8 @@ export default function AdminProjectForm({
     const { data, setData, post, put, errors, processing } = useForm({
         name: project?.name || "",
         description: project?.description || "",
+        customerUserId: project?.customerUserId,
+        managersIds: project?.members?.map(u => u.id) || [],
         projectStatusId: project?.projectStatusId || "",
         expectedEndAt: project?.expectedEndAt || "",
         templateId: "",
@@ -77,7 +81,7 @@ export default function AdminProjectForm({
                 <Heading title={isEdit ? "Editar projeto" : "Novo projeto"} />
                 <Flash flash={flash} className="mb-6" />
 
-                <form onSubmit={submit}>
+                <form onSubmit={submit} encType="multipart/form-data">
                     <div className="grid grid-cols-1 gap-6">
                         {/* Nome */}
                         <div className="space-y-2">
@@ -105,6 +109,22 @@ export default function AdminProjectForm({
                         </div>
 
                         <div className="grid grid-cols-2 gap-6">
+                            {/* Cliente */}
+                            <div className="space-y-2">
+                                <Label>Cliente</Label>
+                                <ComboboxUser placeholder="Selecione um cliente" value={data.customerUserId} onChange={(v) => setData("customerUserId", v || undefined)} />
+                                <InputError message={errors.customerUserId} />
+                            </div>
+
+                            {/* Gestores */}
+                            {!isEdit && (
+                                <div className="space-y-2">
+                                    <Label>Gestores *</Label>
+                                    <ComboboxUsers placeholder="Selecione os gestores" value={data.managersIds} onChange={(v) => setData("managersIds", v)} />
+                                    <InputError message={errors.managersIds} />
+                                </div>
+                            )}
+
                             {/* Status */}
                             <div className="space-y-2">
                                 <Label>Status *</Label>
@@ -138,6 +158,12 @@ export default function AdminProjectForm({
                                 />
                                 <InputError message={errors.expectedEndAt} />
                             </div>
+
+                            {/* Documentos */}
+                            {/* <div className="space-y-2">
+                                <Label>Documentos</Label>
+                                <FileUploadMultiple />
+                            </div> */}
 
                             {/* Modelo inicial */}
                             {!isEdit && (

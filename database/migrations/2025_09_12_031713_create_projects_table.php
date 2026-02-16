@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', 120);
             $table->text('description')->nullable();
+            $table->foreignId('customerUserId')->nullable()->constrained('users')->cascadeOnDelete();
             $table->foreignId('projectStatusId')->constrained('projectsStatus');
             $table->dateTime('expectedEndAt')->nullable();
             $table->dateTime('finishedAt')->nullable();
@@ -59,6 +60,7 @@ return new class extends Migration
         });
 
         Schema::table('projects', function (Blueprint $table) {
+            $table->dropForeign(['customerUserId']);
             $table->dropForeign(['projectStatusId']);
         });
 

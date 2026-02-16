@@ -28,6 +28,9 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::get('users/getDetails/{id}', [UserController::class, 'getDetails'])
         ->name('admin.users.getDetails');
 
+    Route::Get('users/autocomplete', [UserController::class, 'autocomplete'])
+        ->name('admin.users.autocomplete');
+
     Route::get('users/{user}', [UserController::class, 'edit'])
         ->name('admin.users.edit');
 

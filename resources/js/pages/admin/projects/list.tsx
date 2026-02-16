@@ -127,10 +127,11 @@ export default function AdminProjectList({ projects }: AdminProjectListProps) {
                     <TableHeader>
                         <TableRow>
                             <TableHead className="w-1/12">ID</TableHead>
-                            <TableHead className="w-4/12">Nome</TableHead>
+                            <TableHead className="w-3/12">Nome</TableHead>
+                            <TableHead className="w-2/12">Cliente</TableHead>
                             <TableHead className="w-2/12">Status</TableHead>
                             <TableHead className="w-2/12">Prazo</TableHead>
-                            <TableHead className="w-3/12"></TableHead>
+                            <TableHead className="w-2/12"></TableHead>
                         </TableRow>
                     </TableHeader>
 
@@ -149,6 +150,7 @@ export default function AdminProjectList({ projects }: AdminProjectListProps) {
                             <TableRow key={proj.id}>
                                 <TableCell className="font-medium">{proj.id}</TableCell>
                                 <TableCell>{proj.name}</TableCell>
+                                <TableCell>{proj.customer?.name || '-'}</TableCell>
                                 <TableCell>
                                     <Badge variant={proj.closeReason ? 'destructive' : 'default'}>{proj.project_status?.name}</Badge>
                                 </TableCell>

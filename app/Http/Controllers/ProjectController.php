@@ -12,8 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use DB;
 
-class ProjectController extends Controller
-{
+class ProjectController extends Controller {
     
     public function index(Request $request): Response {
         $search = $request->input('search');
@@ -22,7 +21,7 @@ class ProjectController extends Controller
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%");
             })
-            ->with(['projectStatus'])
+            ->with(['projectStatus', 'customer'])
             // ->whereNot('projectStatusId', env('projectStatusClosedId'))
             ->orderBy('created_at', 'desc')
             ->paginate(10)
@@ -55,11 +54,14 @@ class ProjectController extends Controller
         $request->validate([
             'name' => 'required|string|min:3|max:120',
             'description' => 'nullable|string|max:500',
+            'customerUserId' => 'nullable|integer|exists:users,id',
             'projectStatusId' => 'nullable|integer|exists:projectsStatus,id',
             'expectedEndAt' => 'nullable|date|after_or_equal:today',
         ]);
 
         $input = $request->all();
+
+        $input['customerUserId'] = empty($input['customerUserId']) ? null : $input['customerUserId'];
 
         if($project->projectStatusId == env('projectStatusClosedId')) {
             return redirect()
@@ -179,6 +181,9 @@ class ProjectController extends Controller
         $request->validate([
             'name' => 'required|string|min:3|max:120',
             'description' => 'nullable|string|max:500',
+            'customerUserId' => 'nullable|exists:users,id',
+            'managersIds' => 'required|array|min:1',
+            'managersIds.*' => 'integer|exists:users,id',
             'projectStatusId' => 'nullable|integer|exists:projectsStatus,id',
             'expectedEndAt' => 'nullable|date|after_or_equal:today',
             'templateId' => 'nullable|integer|exists:templates,id',
@@ -188,7 +193,23 @@ class ProjectController extends Controller
 
         try {
 
-            Project::create($input);
+            $project = Project::create($input);
+
+            $project->members()->create([
+                'userId' => $input['customerUserId'],
+                'roleId' => env('roleCustomerId'),
+                'description' => 'Parte interessada principal do projeto',
+            ]);
+
+            $managersData = collect($input['managersIds'])->map(function ($userId) {
+                return [
+                    'userId' => $userId,
+                    'roleId' => env('roleManagerId'),
+                    'description' => 'Responsável pela gestão e organização das atividades do projeto',
+                ];
+            });
+            
+            $project->members()->createMany($managersData);
 
             return redirect()
                 ->route('admin.projects.list')

@@ -75,6 +75,7 @@ export interface Project {
     id: number;
     name: string;
     description?: string;
+    customerUserId?: number;
     projectStatusId: number;
     expectedEndAt?: Date;
     finishedAt?: Date;
@@ -84,6 +85,8 @@ export interface Project {
     deleted_at?: string;
 
     project_status?: ProjectStatus;
+    customer?: User;
+    members?: User[];
 };
 
 export interface Invitation {

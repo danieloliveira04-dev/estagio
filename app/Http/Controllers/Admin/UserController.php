@@ -225,6 +225,13 @@ class UserController extends Controller
         }
     }
 
+    //--
+
+    public function autocomplete() {
+        $users = User::get();
+        return response()->json($users);
+    }
+
     public function getDetails(string $id) {
         $user = User::query()
             ->with([

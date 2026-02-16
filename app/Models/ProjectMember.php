@@ -10,4 +10,6 @@ class ProjectMember extends Model
     use SoftDeletes;
 
     protected $table = 'projectsMembers';
+
+    protected $fillable = ['projectId', 'userId', 'roleId', 'description'];
 }
