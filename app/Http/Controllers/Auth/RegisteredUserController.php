@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Helpers\LogHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
+use App\Models\ProjectInvitation;
 use App\Models\Role;
 use App\Models\User;
 use DB;
@@ -53,8 +54,8 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'invitation' => 'required|exists:invitations,token', 
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'name' => 'required|string|max:225',
+            'email' => 'required|string|lowercase|email|max:225|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -83,6 +84,11 @@ class RegisteredUserController extends Controller
             $invitation->update([
                 'status' => Invitation::STATUS_ACCEPTED,
             ]);
+
+            // Atualizar os convites dos projetos criados juntos com esse invitation
+            ProjectInvitation::query()
+                ->where('invitationId', $invitation->id)
+                ->update(['userId' => $user->id]);
 
             DB::commit();
 

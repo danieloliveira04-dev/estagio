@@ -61,14 +61,30 @@ export interface User {
     id: number;
     name: string;
     email: string;
-    role: Role;
+    roleId: number;
     status: string;
     phone?: string;
     photo?: string;
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
+
+    role?: Role;
+
     [key: string]: unknown; // This allows for additional properties...
+};
+
+export interface ProjectMember {
+    projectId: number;
+    userId: number;
+    roleId: number;
+    description?: string;
+    created_at: string;
+    updated_at: string;
+    deleted_at?: string;
+
+    user?: User;
+    role?: Role;
 };
 
 export interface Project {
@@ -86,11 +102,54 @@ export interface Project {
 
     project_status?: ProjectStatus;
     customer?: User;
-    members?: User[];
+    members?: ProjectMember[];
+    invitations?: ProjectInvitation[];
 };
 
+export const INVITATION_STATUS = {
+    PENDING: 'pending',
+    ACCEPTED: 'accepted',
+    EXPIRED: 'expired',
+} as const;
+
+export type InvitationStatus = typeof INVITATION_STATUS[keyof typeof INVITATION_STATUS];
+
 export interface Invitation {
+    id: number;
+    expiredAt: Date;
+    email: string;
     token: string;
+    status: InvitationStatus;
+    createdByUserId: number;
+
+    created_by_user?: User;
+};
+
+export const PROJECT_INVITATION_STATUS = {
+    PENDING: 'pending',
+    ACCEPTED: 'accepted',
+    DECLINED: 'declined',
+} as const;
+
+export type ProjectInvitationStatus = typeof PROJECT_INVITATION_STATUS[keyof typeof PROJECT_INVITATION_STATUS];
+
+export interface ProjectInvitation {
+    id: number;
+    projectId: number;
+    userId?: number;
+    invitationId?: number;
+    roleId: number;
+    description?: number;
+    status: ProjectInvitationStatus;
+    createdByUserId: number;
+    created_at: string;
+    updated_at: string;
+    deleted_at?: string;
+
+    user?: User;
+    invitation?: Invitation;
+    role?: Role;
+    created_by_user?: User;
 };
 
 export interface Tag {

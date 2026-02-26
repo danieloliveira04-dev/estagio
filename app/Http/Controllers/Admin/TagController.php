@@ -1,20 +1,21 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
-use App\Helpers\LogHelper;
-use App\Models\ProjectStatus;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 use Inertia\Response;
-use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use App\Helpers\LogHelper;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
 
-class ProjectStatusController extends Controller
+class TagController extends Controller
 {
     public function show(Request $request): Response {
         $search = $request->input('search');
 
-        $projectStatus = ProjectStatus::query()
+        $tags = Tag::query()
             ->when($search, function($query, $search) {
                 $query->where('name', 'like', "%{$search}%");
             })
@@ -22,35 +23,35 @@ class ProjectStatusController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return Inertia::render('admin/projectStatus/list', [
-            'projectStatus' => $projectStatus,
+        return Inertia::render('admin/tags/list', [
+            'tags' => $tags, 
         ]);
     }
 
-    public function edit(ProjectStatus $projectStatus): Response {
-        return Inertia::render('admin/projectStatus/form', [
-            'projectStatus' => $projectStatus,
+    public function edit(Tag $tag): Response {
+        return Inertia::render('admin/tags/form', [
+            'tag' => $tag,
         ]);
     }
 
-    public function update(ProjectStatus $projectStatus, Request $request): RedirectResponse {
+    public function update(Request $request, Tag $tag): RedirectResponse {
         $request->validate([
-            'name' => 'required|string|max:45|unique:projectsStatus,name,' . $projectStatus->id,
+            'name' => 'required|string|min:3|max:45|unique:tags,name,' . $tag->id,
         ]);
 
         $input = $request->only(['name']);
 
         try {
 
-            $projectStatus->fill($input)->save();
+            $tag->fill($input)->save();
 
             return redirect()
-                ->route('admin.projectStatus.list')
+                ->route('admin.tags.list')
                 ->with('flash', [
                     'type' => 'success',
-                    'message' => 'Status de projeto atualizado com sucesso.',
+                    'message' => 'Tag atualizada com sucesso.',
                 ]);
-            
+
         } catch (\Exception $ex) {
             LogHelper::exception($ex);
 
@@ -60,32 +61,22 @@ class ProjectStatusController extends Controller
                 $msg .= ' Detalhes: ' . $ex->getMessage();
             }
 
-            return redirect(route('admin.projectStatus.list'))->with('flash', [
+            return redirect(route('admin.tags.list'))->with('flash', [
                 'type' => 'error',
                 'message' => $msg,
             ]);
         }
     }
 
-    public function delete(ProjectStatus $projectStatus): RedirectResponse {
-        if(!$projectStatus->projects->isEmpty()) {
-            return redirect()
-                ->route('admin.projectStatus.list')
-                ->with('flash', [
-                    'type' => 'error',
-                    'message' => 'Não é possível excluir esse status, pois está vinculado aos projetos: ' 
-                        . $projectStatus->projects->pluck('name')->join(', ')
-                ]);
-        }
-
+    public function delete(Tag $tag): RedirectResponse {
         try {    
-            $projectStatus->delete();
+            $tag->delete();
 
             return redirect()
-                ->route('admin.projectStatus.list')
+                ->route('admin.tags.list')
                 ->with('flash', [
                     'type' => 'success',
-                    'message' => 'Status de projeto excluído com sucesso.',
+                    'message' => 'Tag excluída com sucesso.',
                 ]);
 
         } catch (\Exception $ex) {
@@ -97,35 +88,34 @@ class ProjectStatusController extends Controller
                 $msg .= ' Detalhes: ' . $ex->getMessage();
             }
 
-            return redirect(route('admin.projectStatus.list'))->with('flash', [
+            return redirect(route('admin.tags.list'))->with('flash', [
                 'type' => 'error',
                 'message' => $msg,
             ]);
         }
     }
-    
+
     public function form(): Response {
-        return Inertia::render('admin/projectStatus/form', [
-        ]);
+        return Inertia::render('admin/tags/form', []);
     }
 
     public function store(Request $request): RedirectResponse {
         $request->validate([
-            'name' => 'required|string|max:45|unique:tasksStatus,name',
+            'name' => 'required|string|min:3|max:45|unique:tags,name'
         ]);
 
         try {
-            
-            ProjectStatus::create([
+
+            Tag::create([
                 'name' => $request->name,
             ]);
 
             return redirect()
-                ->route('admin.projectStatus.list')
+                ->route('admin.tags.list')
                 ->with('flash', [
                     'type' => 'success',
-                    'message' => 'Status de projeto criado com sucesso!',
-                ]);
+                    'message' => 'Tag criada com sucesso!',
+                ]); 
 
         } catch (\Exception $ex) {
             LogHelper::exception($ex);
@@ -144,14 +134,12 @@ class ProjectStatusController extends Controller
     }
 
     public function getDetails(string $id) {
-        $status = ProjectStatus::query()
-            ->with(['projects'])
+        $tag = Tag::query()
             ->findOrFail($id);
-                
+
         return response()->json([
-            'projectStatus' => $status,
-            'projects' => $status->projects,
-            'canDelete' => $status->projects->isEmpty(),
+            'tag' => $tag,
+            'canDelete' => true,
         ]);
     }
 }

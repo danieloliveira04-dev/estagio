@@ -49,7 +49,7 @@ export default function AdminProjectForm({
         name: project?.name || "",
         description: project?.description || "",
         customerUserId: project?.customerUserId,
-        managersIds: project?.members?.map(u => u.id) || [],
+        managersIds: project?.members?.map(u => u.userId) || [],
         projectStatusId: project?.projectStatusId || "",
         expectedEndAt: project?.expectedEndAt || "",
         templateId: "",

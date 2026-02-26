@@ -52,8 +52,8 @@ class UserController extends Controller
 
     public function update(User $user, Request $request): RedirectResponse {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:users,email,' . $user->id,
+            'name' => 'required|string|max:225',
+            'email' => 'required|string|lowercase|email|max:225|unique:users,email,' . $user->id,
             'password' => 'nullable|min:3',
             'phone' => 'nullable|max:20',
             'roleId' => ['required', 'integer', 'exists:roles,id'],
@@ -171,7 +171,7 @@ class UserController extends Controller
 
     public function inviteStore(Request $request): RedirectResponse {
         $request->validate([
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'email' => 'required|string|lowercase|email|max:225|unique:'.User::class,
             'roleId' => ['required', 'integer', 'exists:roles,id'],
         ]);
 
@@ -227,8 +227,18 @@ class UserController extends Controller
 
     //--
 
-    public function autocomplete() {
-        $users = User::get();
+    public function autocomplete(Request $request) {
+        $filters = $request->query();
+
+        $users = User::query()
+            ->when($filters['query'] ?? false, function ($query, $text) {
+                $query->where('email', 'like', $text . '%');
+            })
+            ->when($filters['email'] ?? false, function ($query, $email) {
+                $query->where('email', $email);
+            })
+            ->get();
+
         return response()->json($users);
     }
 

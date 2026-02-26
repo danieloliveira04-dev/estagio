@@ -1,12 +1,12 @@
 <?php
 
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\ProjectStatusController;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\TagController;
-use App\Http\Controllers\TaskStatusController;
-use App\Http\Controllers\TemplateController;
+use App\Http\Controllers\Admin\ProjectController;
+use App\Http\Controllers\Admin\ProjectStatusController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\TagController;
+use App\Http\Controllers\Admin\TaskStatusController;
+use App\Http\Controllers\Admin\TemplateController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 

@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {show} from "@/routes/projects";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -149,7 +150,9 @@ export default function AdminProjectList({ projects }: AdminProjectListProps) {
                         {projects.data.map((proj) => (
                             <TableRow key={proj.id}>
                                 <TableCell className="font-medium">{proj.id}</TableCell>
-                                <TableCell>{proj.name}</TableCell>
+                                <TableCell>
+                                    <Link href={show({ project: proj.id })}>{proj.name}</Link>
+                                </TableCell>
                                 <TableCell>{proj.customer?.name || '-'}</TableCell>
                                 <TableCell>
                                     <Badge variant={proj.closeReason ? 'destructive' : 'default'}>{proj.project_status?.name}</Badge>

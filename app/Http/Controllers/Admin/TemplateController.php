@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Models\Template;
 use Illuminate\Http\Request;
 use Inertia\Response;
 use Inertia\Inertia;
 use App\Helpers\LogHelper;
+use App\Http\Controllers\Controller;
 use App\Models\TaskStatus;
 use DB;
 use Illuminate\Http\RedirectResponse;

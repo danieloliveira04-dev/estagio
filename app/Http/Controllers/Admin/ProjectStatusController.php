@@ -1,20 +1,21 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Helpers\LogHelper;
-use App\Models\TaskStatus;
+use App\Http\Controllers\Controller;
+use App\Models\ProjectStatus;
 use Illuminate\Http\Request;
 use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 
-class TaskStatusController extends Controller
+class ProjectStatusController extends Controller
 {
     public function show(Request $request): Response {
         $search = $request->input('search');
 
-        $taskStatus = TaskStatus::query()
+        $projectStatus = ProjectStatus::query()
             ->when($search, function($query, $search) {
                 $query->where('name', 'like', "%{$search}%");
             })
@@ -22,33 +23,33 @@ class TaskStatusController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return Inertia::render('admin/taskStatus/list', [
-            'taskStatus' => $taskStatus,
+        return Inertia::render('admin/projectStatus/list', [
+            'projectStatus' => $projectStatus,
         ]);
     }
 
-    public function edit(TaskStatus $taskStatus): Response {
-        return Inertia::render('admin/taskStatus/form', [
-            'taskStatus' => $taskStatus,
+    public function edit(ProjectStatus $projectStatus): Response {
+        return Inertia::render('admin/projectStatus/form', [
+            'projectStatus' => $projectStatus,
         ]);
     }
 
-    public function update(TaskStatus $taskStatus, Request $request): RedirectResponse {
+    public function update(ProjectStatus $projectStatus, Request $request): RedirectResponse {
         $request->validate([
-            'name' => 'required|string|max:45|unique:tasksStatus,name,' . $taskStatus->id,
+            'name' => 'required|string|max:45|unique:projectsStatus,name,' . $projectStatus->id,
         ]);
 
         $input = $request->only(['name']);
 
         try {
 
-            $taskStatus->fill($input)->save();
+            $projectStatus->fill($input)->save();
 
             return redirect()
-                ->route('admin.taskStatus.list')
+                ->route('admin.projectStatus.list')
                 ->with('flash', [
                     'type' => 'success',
-                    'message' => 'Status da tarefa atualizado com sucesso.',
+                    'message' => 'Status de projeto atualizado com sucesso.',
                 ]);
             
         } catch (\Exception $ex) {
@@ -60,32 +61,32 @@ class TaskStatusController extends Controller
                 $msg .= ' Detalhes: ' . $ex->getMessage();
             }
 
-            return redirect(route('admin.taskStatus.list'))->with('flash', [
+            return redirect(route('admin.projectStatus.list'))->with('flash', [
                 'type' => 'error',
                 'message' => $msg,
             ]);
         }
     }
 
-    public function delete(TaskStatus $taskStatus): RedirectResponse {
-        if(!$taskStatus->tasks->isEmpty()) {
+    public function delete(ProjectStatus $projectStatus): RedirectResponse {
+        if(!$projectStatus->projects->isEmpty()) {
             return redirect()
-                ->route('admin.taskStatus.list')
+                ->route('admin.projectStatus.list')
                 ->with('flash', [
                     'type' => 'error',
-                    'message' => 'Não é possível excluir este perfil, pois está vinculado aos usuários: ' 
-                        . $taskStatus->users()->pluck('name')->join(', ')
+                    'message' => 'Não é possível excluir esse status, pois está vinculado aos projetos: ' 
+                        . $projectStatus->projects->pluck('name')->join(', ')
                 ]);
         }
 
         try {    
-            $taskStatus->delete();
+            $projectStatus->delete();
 
             return redirect()
-                ->route('admin.taskStatus.list')
+                ->route('admin.projectStatus.list')
                 ->with('flash', [
                     'type' => 'success',
-                    'message' => 'Status da tarefa excluído com sucesso.',
+                    'message' => 'Status de projeto excluído com sucesso.',
                 ]);
 
         } catch (\Exception $ex) {
@@ -97,7 +98,7 @@ class TaskStatusController extends Controller
                 $msg .= ' Detalhes: ' . $ex->getMessage();
             }
 
-            return redirect(route('admin.taskStatus.list'))->with('flash', [
+            return redirect(route('admin.projectStatus.list'))->with('flash', [
                 'type' => 'error',
                 'message' => $msg,
             ]);
@@ -105,7 +106,7 @@ class TaskStatusController extends Controller
     }
     
     public function form(): Response {
-        return Inertia::render('admin/taskStatus/form', [
+        return Inertia::render('admin/projectStatus/form', [
         ]);
     }
 
@@ -116,15 +117,15 @@ class TaskStatusController extends Controller
 
         try {
             
-            TaskStatus::create([
+            ProjectStatus::create([
                 'name' => $request->name,
             ]);
 
             return redirect()
-                ->route('admin.taskStatus.list')
+                ->route('admin.projectStatus.list')
                 ->with('flash', [
                     'type' => 'success',
-                    'message' => 'Status da tarefa criado com sucesso!',
+                    'message' => 'Status de projeto criado com sucesso!',
                 ]);
 
         } catch (\Exception $ex) {
@@ -144,14 +145,14 @@ class TaskStatusController extends Controller
     }
 
     public function getDetails(string $id) {
-        $taskStatus = TaskStatus::query()
-            ->with(['tasks'])
+        $status = ProjectStatus::query()
+            ->with(['projects'])
             ->findOrFail($id);
                 
         return response()->json([
-            'taskStatus' => $taskStatus,
-            'tasks' => $taskStatus->tasks,
-            'canDelete' => $taskStatus->tasks->isEmpty(),
+            'projectStatus' => $status,
+            'projects' => $status->projects,
+            'canDelete' => $status->projects->isEmpty(),
         ]);
     }
 }

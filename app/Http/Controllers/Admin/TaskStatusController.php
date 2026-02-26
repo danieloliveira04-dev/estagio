@@ -1,20 +1,21 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
-use App\Models\Tag;
+use App\Helpers\LogHelper;
+use App\Http\Controllers\Controller;
+use App\Models\TaskStatus;
 use Illuminate\Http\Request;
 use Inertia\Response;
-use Inertia\Inertia;
-use App\Helpers\LogHelper;
 use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
 
-class TagController extends Controller
+class TaskStatusController extends Controller
 {
     public function show(Request $request): Response {
         $search = $request->input('search');
 
-        $tags = Tag::query()
+        $taskStatus = TaskStatus::query()
             ->when($search, function($query, $search) {
                 $query->where('name', 'like', "%{$search}%");
             })
@@ -22,35 +23,35 @@ class TagController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return Inertia::render('admin/tags/list', [
-            'tags' => $tags, 
+        return Inertia::render('admin/taskStatus/list', [
+            'taskStatus' => $taskStatus,
         ]);
     }
 
-    public function edit(Tag $tag): Response {
-        return Inertia::render('admin/tags/form', [
-            'tag' => $tag,
+    public function edit(TaskStatus $taskStatus): Response {
+        return Inertia::render('admin/taskStatus/form', [
+            'taskStatus' => $taskStatus,
         ]);
     }
 
-    public function update(Request $request, Tag $tag): RedirectResponse {
+    public function update(TaskStatus $taskStatus, Request $request): RedirectResponse {
         $request->validate([
-            'name' => 'required|string|min:3|max:45|unique:tags,name,' . $tag->id,
+            'name' => 'required|string|max:45|unique:tasksStatus,name,' . $taskStatus->id,
         ]);
 
         $input = $request->only(['name']);
 
         try {
 
-            $tag->fill($input)->save();
+            $taskStatus->fill($input)->save();
 
             return redirect()
-                ->route('admin.tags.list')
+                ->route('admin.taskStatus.list')
                 ->with('flash', [
                     'type' => 'success',
-                    'message' => 'Tag atualizada com sucesso.',
+                    'message' => 'Status da tarefa atualizado com sucesso.',
                 ]);
-
+            
         } catch (\Exception $ex) {
             LogHelper::exception($ex);
 
@@ -60,22 +61,32 @@ class TagController extends Controller
                 $msg .= ' Detalhes: ' . $ex->getMessage();
             }
 
-            return redirect(route('admin.tags.list'))->with('flash', [
+            return redirect(route('admin.taskStatus.list'))->with('flash', [
                 'type' => 'error',
                 'message' => $msg,
             ]);
         }
     }
 
-    public function delete(Tag $tag): RedirectResponse {
+    public function delete(TaskStatus $taskStatus): RedirectResponse {
+        if(!$taskStatus->tasks->isEmpty()) {
+            return redirect()
+                ->route('admin.taskStatus.list')
+                ->with('flash', [
+                    'type' => 'error',
+                    'message' => 'Não é possível excluir este perfil, pois está vinculado aos usuários: ' 
+                        . $taskStatus->users()->pluck('name')->join(', ')
+                ]);
+        }
+
         try {    
-            $tag->delete();
+            $taskStatus->delete();
 
             return redirect()
-                ->route('admin.tags.list')
+                ->route('admin.taskStatus.list')
                 ->with('flash', [
                     'type' => 'success',
-                    'message' => 'Tag excluída com sucesso.',
+                    'message' => 'Status da tarefa excluído com sucesso.',
                 ]);
 
         } catch (\Exception $ex) {
@@ -87,34 +98,35 @@ class TagController extends Controller
                 $msg .= ' Detalhes: ' . $ex->getMessage();
             }
 
-            return redirect(route('admin.tags.list'))->with('flash', [
+            return redirect(route('admin.taskStatus.list'))->with('flash', [
                 'type' => 'error',
                 'message' => $msg,
             ]);
         }
     }
-
+    
     public function form(): Response {
-        return Inertia::render('admin/tags/form', []);
+        return Inertia::render('admin/taskStatus/form', [
+        ]);
     }
 
     public function store(Request $request): RedirectResponse {
         $request->validate([
-            'name' => 'required|string|min:3|max:45|unique:tags,name'
+            'name' => 'required|string|max:45|unique:tasksStatus,name',
         ]);
 
         try {
-
-            Tag::create([
+            
+            TaskStatus::create([
                 'name' => $request->name,
             ]);
 
             return redirect()
-                ->route('admin.tags.list')
+                ->route('admin.taskStatus.list')
                 ->with('flash', [
                     'type' => 'success',
-                    'message' => 'Tag criada com sucesso!',
-                ]); 
+                    'message' => 'Status da tarefa criado com sucesso!',
+                ]);
 
         } catch (\Exception $ex) {
             LogHelper::exception($ex);
@@ -133,12 +145,14 @@ class TagController extends Controller
     }
 
     public function getDetails(string $id) {
-        $tag = Tag::query()
+        $taskStatus = TaskStatus::query()
+            ->with(['tasks'])
             ->findOrFail($id);
-
+                
         return response()->json([
-            'tag' => $tag,
-            'canDelete' => true,
+            'taskStatus' => $taskStatus,
+            'tasks' => $taskStatus->tasks,
+            'canDelete' => $taskStatus->tasks->isEmpty(),
         ]);
     }
 }
