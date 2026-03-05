@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             ProjectStatusSeeder::class,
             TaskStatusSeeder::class,
+            TemplateSeeder::class,
 
             UserSeeder::class,
             ProjectSeeder::class,

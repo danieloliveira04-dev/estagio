@@ -14,8 +14,20 @@ Route::prefix('projects')->middleware('auth')->group(function() {
     Route::get('{project}/members', [ProjectController::class, 'members'])
         ->name('projects.members');
 
+    Route::put('{project}/members/{member}', [ProjectController::class, 'updateMember'])
+        ->scopeBindings()    
+        ->name('projects.members.update');
+
+    Route::delete('{project}/members/{member}', [ProjectController::class, 'deleteMember'])
+        ->scopeBindings()
+        ->name('projects.members.delete');
+
     Route::post('{project}/members/invite', [ProjectController::class, 'inviteMember'])
         ->name('projects.members.invite');
+
+    Route::delete('{project}/members/invite/{invitation}', [ProjectController::class, 'deleteInviteMember'])
+        ->scopeBindings()
+        ->name('projects.members.deleteInvite');
 
     Route::get('{project}/invitation/accept', [ProjectController::class, 'acceptInvitation'])
         ->name('projects.invitation.accept');

@@ -23,16 +23,15 @@ class TaskSeeder extends Seeder
             $collaborators = \DB::table('projectsMembers')
                 ->where('projectId', $project->id)
                 ->where('roleId', 4)
-                ->get(['projectId', 'userId']);
+                ->get();
 
             // Criar 5 tarefas de exemplo para cada projeto
             for ($i = 0; $i < 5; $i++) {
                 $random = $collaborators->random();
 
                 Task::factory()->create([
-                    'projectId'    => $project->id,          // se ainda existe esse campo em tasks
-                    'pmProjectId'  => $random->projectId,  // FK para a pivot
-                    'pmUserId'     => $random->userId,     // FK para a pivot
+                    'projectId'    => $project->id,
+                    'projectMemberId' => $random->id,
                     'taskStatusId' => TaskStatus::inRandomOrder()->first()->id ?? null,
                 ]);
             }

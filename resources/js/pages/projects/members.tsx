@@ -3,13 +3,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useInitials } from "@/hooks/use-initials";
+import { ProjectInviteMemberCancelAlertDialog } from "@/layouts/project/dialog/project-invite-member-cancel-alert-dialog";
 import { ProjectInviteMemberDialog } from "@/layouts/project/dialog/project-invite-member-dialog";
+import { ProjectMemberDialog } from "@/layouts/project/dialog/project-member-dialog";
+import { ProjectMemberRemoveAlertDialog } from "@/layouts/project/dialog/project-member-remove-alert-dialog";
 import ProjectLayout from "@/layouts/project/project-layout";
 import { projectInvitationStatusColor } from "@/lib/colors";
 import { projectInvitationStatusDescription } from "@/lib/descriptions";
 import { capitalize, formatDate } from "@/lib/utils";
 import projects from "@/routes/projects";
-import { BreadcrumbItem, Project, PROJECT_INVITATION_STATUS, Role } from "@/types";
+import { BreadcrumbItem, Project, PROJECT_INVITATION_STATUS, ProjectInvitation, ProjectMember, Role } from "@/types";
 import { Edit, SquareX, UserPlus } from "lucide-react";
 import { useState } from "react";
 
@@ -36,12 +39,37 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function ProjectMembers({project, roles} : ProjectMembersProps) {
     const getInitials = useInitials();
 
+    const [editMemberModal, setEditMemberModal] = useState(false);
+    const [removeMemberModal, setRemoveMemberModal] = useState(false);
+
     const [inviteModal, setInviteModal] = useState(false);
+    const [cancelInviteModal, setCancelInviteModal] = useState(false);
+    
+    const [member, setMember] = useState<ProjectMember>();
+    const [invite, setInvite] = useState<ProjectInvitation>();
+
+    /** 📌 Abrir modal para editar membro */
+    const handleOpenEditMemberModal = (member: ProjectMember) => {
+        setMember(member);
+        setEditMemberModal(true);
+    }
+
+    /** 📌 Abrir modal para remover membro */
+    const handleOpenRemoveMemberModal = (member: ProjectMember) => {
+        setMember(member);
+        setRemoveMemberModal(true);
+    }
 
     /** 📌 Abrir modal para convidar */
     const handleOpenInviteModal = () => {
         setInviteModal(true);
     };
+
+    /** 📌 Abrir modal para cancelar convite */
+    const handleOpenCancelInviteModal = (invite: ProjectInvitation) => {
+        setInvite(invite);
+        setCancelInviteModal(true);
+    }
 
     return (
         <ProjectLayout tab="members" breadcrumbs={breadcrumbs}>
@@ -92,11 +120,11 @@ export default function ProjectMembers({project, roles} : ProjectMembersProps) {
                             </TableCell>
                             <TableCell>
                                 <div className="flex items-center justify-end gap-2 min-h-9">
-                                    <Button size="icon" variant="outline" title="Editar">
+                                    <Button size="icon" variant="outline" title="Editar" onClick={() => handleOpenEditMemberModal(member)}>
                                         <Edit />
                                     </Button>
 
-                                    <Button size="icon" variant="destructive" title="Remover membro">
+                                    <Button size="icon" variant="destructive" title="Remover membro" onClick={() => handleOpenRemoveMemberModal(member)}>
                                         <SquareX />
                                     </Button>
                                 </div>
@@ -166,7 +194,7 @@ export default function ProjectMembers({project, roles} : ProjectMembersProps) {
                             </TableCell>
                             <TableCell className="text-right">
                                 {invitation.status === PROJECT_INVITATION_STATUS.PENDING && (
-                                    <Button size="icon" variant="destructive" title="Cancelar">
+                                    <Button size="icon" variant="destructive" title="Cancelar" onClick={() => handleOpenCancelInviteModal(invitation)}>
                                         <SquareX />
                                     </Button>
                                 )}
@@ -176,7 +204,11 @@ export default function ProjectMembers({project, roles} : ProjectMembersProps) {
                 </TableBody>
             </Table>
 
+            <ProjectMemberDialog open={editMemberModal} onOpenChange={setEditMemberModal} roles={roles} member={member} />
+            <ProjectMemberRemoveAlertDialog open={removeMemberModal} onOpenChange={setRemoveMemberModal} member={member} />
+
             <ProjectInviteMemberDialog open={inviteModal} onOpenChange={setInviteModal} projectId={project.id} roles={roles} />
+            <ProjectInviteMemberCancelAlertDialog open={cancelInviteModal} onOpenChange={setCancelInviteModal} invite={invite} />
         </ProjectLayout>  
     );
 }

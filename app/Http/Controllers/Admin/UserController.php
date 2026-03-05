@@ -130,8 +130,7 @@ class UserController extends Controller
             Task::query()
                 ->where('pmUserId', $user->id)
                 ->update([
-                    'pmUserId' => null,
-                    'pmProjectId' => null,
+                    'projectMemberId' => null,
                 ]);
 
             event(new UserStatusChanged($user));

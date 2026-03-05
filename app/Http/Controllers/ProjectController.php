@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Events\InvitationCreated;
 use App\Events\ProjectInvitationAccepted;
 use App\Events\ProjectInvitationCreated;
+use App\Events\ProjectMemberRemoved;
 use App\Helpers\LogHelper;
 use App\Models\Invitation;
 use App\Models\Project;
 use App\Models\ProjectInvitation;
+use App\Models\ProjectMember;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -52,6 +54,117 @@ class ProjectController extends Controller {
             'project' => $project,
             'roles' => $roles,
         ]);
+    }
+
+    public function deleteMember(Project $project, ProjectMember $member) {
+        $hasAnotherManager = $project->members()
+            ->where('roleId', env('roleManagerId'))
+            ->where('userId', '!=', $member->userId)
+            ->exists();
+
+        if (!$hasAnotherManager && $member->roleId == env('roleManagerId')) {
+            return redirect()
+                ->route('projects.members', $project)
+                ->with('flash', [
+                    'type' => 'warning',
+                    'message' => 'É obrigatório que exista pelo menos um gestor no projeto.',
+                ]);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $member->delete();
+
+            $tasks = $member->tasks()->get();
+
+            $member->tasks()->update([
+                'projectMemberId' => null,
+            ]);
+
+            event(new ProjectMemberRemoved($project, $member, $tasks));
+
+            DB::commit();
+
+            return redirect()
+                ->route('projects.members', $project)
+                ->with('flash', [
+                    'type' => 'success',
+                    'message' => 'Membro removido com sucesso.',
+                ]);
+
+        } catch (\Exception $ex) {
+            DB::rollBack();
+            
+            LogHelper::exception($ex);
+
+            $message = 'Ocorreu um erro ao tentar salvar os dados.';
+
+            if (!app()->environment('production')) {
+                $message .= ' Detalhes: ' . $ex->getMessage();
+            }
+
+            return redirect()
+                ->route('projects.members', $project)
+                ->with('flash', [
+                    'type' => 'error',
+                    'message' => $message,
+                ]);
+        }
+    }
+
+    public function updateMember(Project $project, ProjectMember $member, Request $request) {
+        $request->validate([
+            'roleId' => 'required|integer|exists:roles,id',
+            'description' => 'nullable|string|max:225',
+        ]);
+
+        $input = $request->input();
+
+        $isManager = $member->roleId == env('roleManagerId');
+        $changingRole = $input['roleId'] != $member->roleId;
+
+        $hasAnotherManager = $project->members()
+            ->where('roleId', env('roleManagerId'))
+            ->where('userId', '!=', $member->userId)
+            ->exists();
+
+        if ($isManager && $changingRole && !$hasAnotherManager) {
+            return redirect()
+                ->route('projects.members', $project)
+                ->with('flash', [
+                    'type' => 'warning',
+                    'message' => 'Não é possível alterar a função do único gestor do projeto.',
+                ]);
+        }
+
+        try {
+
+            $member->update($input);
+
+            return redirect()
+                ->to(route('projects.members', $project->id))
+                ->with('flash', [
+                    'type' => 'success',
+                    'message' => 'Dados do membro atualizados com sucesso.',
+                ]);
+            
+        } catch (\Exception $ex) {
+            LogHelper::exception($ex);
+
+            $msg = 'Ocorreu um erro ao tentar salvar os dados.';
+
+            if (!app()->environment('production')) {
+                $msg .= ' Detalhes: ' . $ex->getMessage();
+            }
+
+            return redirect()
+                ->to(route('projects.members', $project->id))
+                ->with('flash', [
+                    'type' => 'error',
+                    'message' => $msg,
+                ]);
+        }
     }
 
     public function inviteMember(Project $project, Request $request) {
@@ -169,6 +282,44 @@ class ProjectController extends Controller {
                 'type' => 'error',
                 'message' => $msg,
             ]);
+        }
+    }
+
+    public function deleteInviteMember(Project $project, ProjectInvitation $invitation) {
+        if ($invitation->status !== ProjectInvitation::STATUS_PENDING) {
+            return redirect()
+                ->route('projects.show', $project)
+                ->with('flash', [
+                    'type' => 'warning',
+                    'message' => 'Este convite não pode mais ser cancelado.',
+                ]);
+        }
+
+        try {
+            $invitation->delete();
+
+            return redirect()
+                ->route('projects.members', $project)
+                ->with('flash', [
+                    'type' => 'success',
+                    'message' => 'Convite cancelado com sucesso.',
+                ]);
+
+        } catch (\Throwable $ex) {
+            LogHelper::exception($ex);
+
+            $message = 'Ocorreu um erro ao tentar salvar os dados.';
+
+            if (!app()->environment('production')) {
+                $message .= ' Detalhes: ' . $ex->getMessage();
+            }
+
+            return redirect()
+                ->route('projects.members', $project)
+                ->with('flash', [
+                    'type' => 'error',
+                    'message' => $message,
+                ]);
         }
     }
 

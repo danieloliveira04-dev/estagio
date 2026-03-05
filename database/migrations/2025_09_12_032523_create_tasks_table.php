@@ -19,15 +19,9 @@ return new class extends Migration
             $table->dateTime('endDate')->nullable();
             $table->foreignId('projectId')->constrained('projects');
             $table->foreignId('taskStatusId')->constrained('tasksStatus')->nullable();
-            $table->unsignedBigInteger('pmProjectId')->nullable();
-            $table->unsignedBigInteger('pmUserId')->nullable();
+            $table->foreignId('projectMemberId')->nullable()->constrained('projectsMembers');
             $table->timestamps();
             $table->softDeletes();
-
-            $table->foreign(['pmProjectId', 'pmUserId'])
-                ->references(['projectId', 'userId'])
-                ->on('projectsMembers')
-                ->onDelete('set null');
         });
 
         Schema::table('notifications', function (Blueprint $table) {

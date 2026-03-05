@@ -25,6 +25,7 @@ return new class extends Migration
         });
 
         Schema::create('projectsMembers', function (Blueprint $table) {
+            $table->id();
             $table->foreignId('projectId')->constrained('projects');
             $table->foreignId('userId')->constrained('users');
             $table->foreignId('roleId')->constrained('roles');
@@ -32,7 +33,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->primary(['projectId', 'userId']);
+            $table->unique(['projectId', 'userId']);
         });
 
         Schema::table('notifications', function (Blueprint $table) {
