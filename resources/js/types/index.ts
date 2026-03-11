@@ -105,6 +105,21 @@ export interface Project {
     customer?: User;
     members?: ProjectMember[];
     invitations?: ProjectInvitation[];
+    columns?: ProjectColumn[];
+};
+
+export interface ProjectColumn {
+    id: number;
+    name: string;
+    projectId: number;
+    taskStatusId?: number;
+    position: number;
+    created_at: string;
+    updated_at: string;
+    deleted_at?: string;
+
+    tasks?: Task[];
+    taskStatus?: TaskStatus;
 };
 
 export const INVITATION_STATUS = {
@@ -174,6 +189,8 @@ export interface Task {
     created_at: string;
     updated_at: string;
     deleted_at?: string;
+
+    task_status?: TaskStatus;
 };
 
 export interface TaskStatus {

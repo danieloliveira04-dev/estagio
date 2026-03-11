@@ -45,8 +45,6 @@ return new class extends Migration
         Schema::table('tasks', function (Blueprint $table) {
             $table->dropForeign(['projectId']);
             $table->dropForeign(['taskStatusId']);
-
-            $table->dropForeign(['pmProjectId', 'pmUserId']);
         });
 
         Schema::dropIfExists('tasks');

@@ -11,6 +11,19 @@ Route::prefix('projects')->middleware('auth')->group(function() {
     Route::get('{project}', [ProjectController::class, 'show'])
         ->name('projects.show');
 
+    // Columns
+    Route::post('{project}/columns', [ProjectController::class, 'storeColumn'])
+        ->name('projects.columns.store');
+
+    Route::put('{project}/columns/{column}', [ProjectController::class, 'updateColumn'])
+        ->scopeBindings()
+        ->name('projects.columns.update');
+
+    Route::delete('{project}/columns/{column}', [ProjectController::class, 'deleteColumn'])
+        ->scopeBindings()
+        ->name('projects.columns.delete');
+
+    // Members
     Route::get('{project}/members', [ProjectController::class, 'members'])
         ->name('projects.members');
 

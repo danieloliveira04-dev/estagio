@@ -12,7 +12,7 @@ class Task extends Model
 
     protected $table = 'tasks';
 
-    protected $fillable = ['id', 'title', 'description', 'startDate', 'endDate', 'projectId', 'taskStatusId'];
+    protected $fillable = ['id', 'title', 'description', 'startDate', 'endDate', 'projectId', 'taskStatusId', 'projectColumnId'];
 
     public function taskStatus() {
         return $this->hasOne(TaskStatus::class, 'id', 'taskStatusId');

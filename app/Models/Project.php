@@ -29,6 +29,10 @@ class Project extends Model
         return $this->hasMany(ProjectInvitation::class, 'projectId');
     }
 
+    public function columns() {
+        return $this->hasMany(ProjectColumn::class, 'projectId');
+    }
+
     public function tasks() {
         return $this->hasMany(Task::class, 'projectId');
     }

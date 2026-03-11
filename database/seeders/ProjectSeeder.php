@@ -4,8 +4,10 @@ namespace Database\Seeders;
 
 use App\Models\Project;
 use App\Models\ProjectMember;
+use App\Models\Template;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use SebastianBergmann\Environment\Console;
 
 class ProjectSeeder extends Seeder
 {
@@ -14,6 +16,17 @@ class ProjectSeeder extends Seeder
      */
     public function run(): void
     {
+        // Template padrão
+        $template = Template::with('columns')->first();
+
+        $columns = $template->columns->map(function($column, $index) {
+            return [
+                'name' => $column->name,
+                'taskStatusId' => $column->taskStatusId,
+                'position' => $index,
+            ];  
+        });
+
         // Criar alguns projetos
         $projects = [
             [
@@ -30,6 +43,8 @@ class ProjectSeeder extends Seeder
 
         foreach ($projects as $data) {
             $project = Project::create($data);
+
+            $project->columns()->createMany($columns);
 
             $project->members()->createMany([
                 [

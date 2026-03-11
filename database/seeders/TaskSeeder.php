@@ -28,11 +28,13 @@ class TaskSeeder extends Seeder
             // Criar 5 tarefas de exemplo para cada projeto
             for ($i = 0; $i < 5; $i++) {
                 $random = $collaborators->random();
+                $column = $project->columns()->inRandomOrder()->first();
 
                 Task::factory()->create([
                     'projectId'    => $project->id,
+                    'projectColumnId' => $column->id,
                     'projectMemberId' => $random->id,
-                    'taskStatusId' => TaskStatus::inRandomOrder()->first()->id ?? null,
+                    'taskStatusId' => $column->taskStatusId,
                 ]);
             }
         }

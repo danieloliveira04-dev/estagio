@@ -9,9 +9,11 @@ use App\Events\ProjectMemberRemoved;
 use App\Helpers\LogHelper;
 use App\Models\Invitation;
 use App\Models\Project;
+use App\Models\ProjectColumn;
 use App\Models\ProjectInvitation;
 use App\Models\ProjectMember;
 use App\Models\Role;
+use App\Models\TaskStatus;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -27,12 +29,155 @@ class ProjectController extends Controller {
             'members' => function($membersQuery) {
                 $membersQuery->with(['user', 'role']);
             },
+            'columns' => function($columnsQuery) {
+                $columnsQuery->with(['tasks.taskStatus']);
+            },
         ]);
 
 
         return Inertia::render('projects/show', [
             'project' => $project,
+            'taskStatus' => TaskStatus::get(),
         ]);
+    }
+
+    public function storeColumn(Project $project, Request $request) {
+        $request->validate([
+            'name' => 'required|string|max:45',
+            'taskStatusId' => 'nullable|exists:tasksStatus,id',
+        ]);
+
+        $input = $request->input();
+
+        try {
+
+            $project->columns()->create(array_merge($input, [
+                'position' => $project->columns()->count(),
+            ]));
+
+            return redirect()
+                ->to(route('projects.show', $project->id))
+                ->with('flash', [
+                    'type' => 'success',
+                    'message' => 'Coluna criada com sucesso.',
+                ]);
+            
+        } catch (\Exception $ex) {
+            LogHelper::exception($ex);
+
+            $msg = 'Ocorreu um erro ao tentar salvar os dados.';
+
+            if (!app()->environment('production')) {
+                $msg .= ' Detalhes: ' . $ex->getMessage();
+            }
+
+            return redirect()
+                ->to(route('projects.show', $project->id))
+                ->with('flash', [
+                    'type' => 'error',
+                    'message' => $msg,
+                ]);
+        }
+    }
+
+    public function updateColumn(Project $project, ProjectColumn $column, Request $request) {
+        $request->validate([
+            'name' => 'required|string|max:45',
+            'taskStatusId' => 'nullable|exists:tasksStatus,id',
+        ]);
+
+        $input = $request->input();
+
+        try {
+            DB::beginTransaction();
+
+            $column->fill($input);
+
+            $statusChanged = $column->isDirty('taskStatusId');
+
+            $column->save();
+
+            if ($statusChanged && $column->taskStatusId) {
+                $column->tasks()->update([
+                    'taskStatusId' => $column->taskStatusId,
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()
+                ->to(route('projects.show', $project->id))
+                ->with('flash', [
+                    'type' => 'success',
+                    'message' => 'Coluna atualizada com sucesso.',
+                ]);
+            
+        } catch (\Exception $ex) {
+            DB::rollBack();
+
+            LogHelper::exception($ex);
+
+            $msg = 'Ocorreu um erro ao tentar salvar os dados.';
+
+            if (!app()->environment('production')) {
+                $msg .= ' Detalhes: ' . $ex->getMessage();
+            }
+
+            return redirect()
+                ->to(route('projects.show', $project->id))
+                ->with('flash', [
+                    'type' => 'error',
+                    'message' => $msg,
+                ]);
+        }
+    }
+
+    public function deleteColumn(Project $project, ProjectColumn $column) {
+        if ($column->tasks->isNotEmpty()) {
+            return redirect()
+                ->to(route('projects.show', $project->id))
+                ->with('flash', [
+                    'type' => 'error',
+                    'message' => "Não é possível excluir a coluna \"{$column->name}\", pois ela possui tarefas vinculadas. Mova as tarefas para outra coluna antes de realizar a exclusão.",
+                ]);
+        }
+
+        if ($project->columns()->count() === 1) {
+            return redirect()
+                ->to(route('projects.show', $project->id))
+                ->with('flash', [
+                    'type' => 'error',
+                    'message' => "Não é possível excluir a coluna \"{$column->name}\" porque ela é a única coluna do projeto. O projeto deve possuir pelo menos uma coluna ativa.",
+                ]);
+        }
+
+        try {
+
+            $column->delete();
+
+            return redirect()
+                ->to(route('projects.show', $project->id))
+                ->with('flash', [
+                    'type' => 'success',
+                    'message' => 'Coluna excluída com sucesso.',
+                ]);
+            
+        } catch (\Exception $ex) {
+            LogHelper::exception($ex);
+
+            $msg = 'Ocorreu um erro ao tentar salvar os dados.';
+
+            if (!app()->environment('production')) {
+                $msg .= ' Detalhes: ' . $ex->getMessage();
+            }
+
+            return redirect()
+                ->to(route('projects.show', $project->id))
+                ->with('flash', [
+                    'type' => 'error',
+                    'message' => $msg,
+                ]);
+        }
     }
 
     public function members(Project $project) {
