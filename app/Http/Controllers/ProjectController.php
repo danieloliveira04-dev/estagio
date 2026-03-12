@@ -30,7 +30,8 @@ class ProjectController extends Controller {
                 $membersQuery->with(['user', 'role']);
             },
             'columns' => function($columnsQuery) {
-                $columnsQuery->with(['tasks.taskStatus']);
+                $columnsQuery->with(['tasks.taskStatus'])
+                    ->orderBy('position');
             },
         ]);
 
@@ -173,6 +174,66 @@ class ProjectController extends Controller {
 
             return redirect()
                 ->to(route('projects.show', $project->id))
+                ->with('flash', [
+                    'type' => 'error',
+                    'message' => $msg,
+                ]);
+        }
+    }
+
+    public function moveColumn(Project $project, ProjectColumn $column, Request $request) {
+        $request->validate([
+            'position' => 'required|integer',
+        ]);
+
+        $targetColumn = $project->columns()
+            ->where('position', $request->input('position'))
+            ->first();
+
+        if (!$targetColumn) {
+            return redirect()
+                ->route('projects.show', $project)
+                ->with('flash', [
+                    'type' => 'error',
+                    'message' => 'Não é possível mover essa coluna para essa direção.',
+                ]);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $currentPosition = $column->position;
+
+            $column->update([
+                'position' => $targetColumn->position,
+            ]);
+
+            $targetColumn->update([
+                'position' => $currentPosition,    
+            ]);
+
+            DB::commit();
+
+            return redirect()
+                ->to(route('projects.show', $project->id))
+                ->with('flash', [
+                    'type' => 'success',
+                    'message' => 'Coluna movida com sucesso.',
+                ]);
+            
+        } catch (\Exception $ex) {
+            DB::rollBack();
+
+            LogHelper::exception($ex);
+
+            $msg = 'Ocorreu um erro ao tentar salvar os dados.';
+
+            if (!app()->environment('production')) {
+                $msg .= ' Detalhes: ' . $ex->getMessage();
+            }
+
+            return redirect()
+                ->to(route('projects.members', $project->id))
                 ->with('flash', [
                     'type' => 'error',
                     'message' => $msg,

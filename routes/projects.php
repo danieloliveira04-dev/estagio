@@ -23,6 +23,10 @@ Route::prefix('projects')->middleware('auth')->group(function() {
         ->scopeBindings()
         ->name('projects.columns.delete');
 
+    Route::post('{project}/columns/{column}/move', [ProjectController::class, 'moveColumn'])
+        ->scopeBindings()
+        ->name('projects.column.move');
+
     // Members
     Route::get('{project}/members', [ProjectController::class, 'members'])
         ->name('projects.members');
