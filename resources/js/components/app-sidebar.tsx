@@ -21,7 +21,6 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
     },
-
     {
         title: 'Usuários',
         href: users.list().url,
@@ -78,11 +77,10 @@ export function AppSidebar() {
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
-                                <AppLogo />
-                            </Link>
-                        </SidebarMenuButton>
+                        <SidebarMenuButton
+                            render={<Link href={dashboard()} prefetch><AppLogo /></Link>}
+                            size="lg"
+                        />
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>

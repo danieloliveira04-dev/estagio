@@ -20,6 +20,7 @@ export interface NavItem {
     href: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon | null;
     isActive?: boolean;
+    items?: NavItem[];
 }
 
 export interface SharedData {
@@ -36,13 +37,13 @@ export interface FlashType {
     description?: string;
 }
 
-interface PaginationLink {
+export interface PaginationLink {
     url: string | null;
     label: string;
     active: boolean;
 }
 
-interface PaginationResponse<T> {
+export interface PaginationResponse<T> {
     data: T[];
     links: PaginationLink[];
     current_page: number;
@@ -182,15 +183,17 @@ export interface Task {
     description?: string;
     startDate?: Date;
     endDate?: Date;
-    taskStatusId: number;
     projectId: number;
-    pmProjectId?: number;
-    pmUserId?: number;
+    projectColumnId: number;
+    taskStatusId: number;
+    projectMemberId?: number;
     created_at: string;
     updated_at: string;
     deleted_at?: string;
 
     task_status?: TaskStatus;
+    column?: ProjectColumn;
+    tags?: Tag[];
 };
 
 export interface TaskStatus {

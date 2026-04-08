@@ -13,4 +13,10 @@ class Tag extends Model
         'name',
     ];
 
+    //--
+
+    public function tasks() {
+        return $this->belongsToMany(Task::class, 'tagsTasks', 'tagId', 'taskId')->withTimestamps();
+    }
+
 }

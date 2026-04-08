@@ -73,136 +73,138 @@ export default function ProjectMembers({project, roles} : ProjectMembersProps) {
 
     return (
         <ProjectLayout tab="members" breadcrumbs={breadcrumbs}>
-            <h2 className="text-xl font-bold">Membros</h2>
+            <div className="px-4 pt-3 pb-6">
+                <h2 className="text-xl font-bold">Membros</h2>
 
-            <div className="text-right mb-2">
-                <Button onClick={handleOpenInviteModal}>
-                    <UserPlus /> Adicionar membro
-                </Button>
-            </div>
+                <div className="text-right mb-2">
+                    <Button onClick={handleOpenInviteModal}>
+                        <UserPlus /> Adicionar membro
+                    </Button>
+                </div>
 
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead className="w-4/12">Membro</TableHead>
-                        <TableHead className="w-4/12">Cargo</TableHead>
-                        <TableHead className="w-2/12">E-mail</TableHead>
-                        <TableHead className="w-2/12"></TableHead>
-                    </TableRow>
-                </TableHeader>
-
-                <TableBody>
-                    {project.members?.map(member => member.user && (
-                        <TableRow key={member.userId}>
-                            <TableCell>
-                                <div className="flex items-center gap-3">
-                                    <Avatar className="size-12 rounded-full">
-                                        <AvatarImage src={member.user.photo} alt={member.user.name} />
-                                        <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
-                                            {getInitials(member.user.name)}
-                                        </AvatarFallback>
-                                    </Avatar>
-
-                                    <div>
-                                        <span className="block text-lg font-medium truncate -mb-1">{member.user.name}</span>
-                                        <span className="text-muted-foreground">Desde {capitalize(formatDate(member.created_at, 'MMM yyyy'))}</span>
-                                    </div>
-                                </div>
-                            </TableCell>
-                            <TableCell>
-                                <Badge>{member.role?.name}</Badge>
-                                <p className="mt-1 text-sm text-muted-foreground">
-                                    {member.description}
-                                </p>
-                            </TableCell>
-                            <TableCell>
-                                {member.user.email}
-                            </TableCell>
-                            <TableCell>
-                                <div className="flex items-center justify-end gap-2 min-h-9">
-                                    <Button size="icon" variant="outline" title="Editar" onClick={() => handleOpenEditMemberModal(member)}>
-                                        <Edit />
-                                    </Button>
-
-                                    <Button size="icon" variant="destructive" title="Remover membro" onClick={() => handleOpenRemoveMemberModal(member)}>
-                                        <SquareX />
-                                    </Button>
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-
-            <hr className="mt-6 mb-4" />
-
-            <h3 className="text-lg font-bold">Convites</h3>
-
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead className="w-4/12">Usuário</TableHead>
-                        <TableHead className="w-3/12">Cargo</TableHead>
-                        <TableHead className="w-3/12">Status</TableHead>
-                        <TableHead className="w-2/12"></TableHead>
-                    </TableRow>
-                </TableHeader>
-
-                <TableBody>
-                    {project.invitations?.length === 0 && (
+                <Table>
+                    <TableHeader>
                         <TableRow>
-                            <TableCell colSpan={3}>
-                                <p className="text-muted-foreground text-md text-center py-3">
-                                    Sem convites encontrados
-                                </p>
-                            </TableCell>
+                            <TableHead className="w-4/12">Membro</TableHead>
+                            <TableHead className="w-4/12">Cargo</TableHead>
+                            <TableHead className="w-2/12">E-mail</TableHead>
+                            <TableHead className="w-2/12"></TableHead>
                         </TableRow>
-                    )}
+                    </TableHeader>
 
-                    {project.invitations?.map(invitation => (
-                        <TableRow key={invitation.id}>
-                            <TableCell>
-                                {invitation.user ? (
+                    <TableBody>
+                        {project.members?.map(member => member.user && (
+                            <TableRow key={member.userId}>
+                                <TableCell>
                                     <div className="flex items-center gap-3">
                                         <Avatar className="size-12 rounded-full">
-                                            <AvatarImage src={invitation.user.photo} alt={invitation.user.name} />
+                                            <AvatarImage src={member.user.photo} alt={member.user.name} />
                                             <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
-                                                {getInitials(invitation.user.name)}
+                                                {getInitials(member.user.name)}
                                             </AvatarFallback>
                                         </Avatar>
 
                                         <div>
-                                            <span className="block text-lg font-medium truncate -mb-1">{invitation.user.name}</span>
-                                            <span className="text-muted-foreground">{invitation.user.email}</span>
+                                            <span className="block text-lg font-medium truncate -mb-1">{member.user.name}</span>
+                                            <span className="text-muted-foreground">Desde {capitalize(formatDate(member.created_at, 'MMM yyyy'))}</span>
                                         </div>
                                     </div>
-                                ) : (
-                                    <span className="block text-lg font-medium truncate -mb-1">{invitation.invitation?.email}</span>
-                                )}
-                            </TableCell>
-                            <TableCell>
-                                <Badge>{invitation.role?.name}</Badge>
-                                <p className="mt-1 text-sm text-muted-foreground">
-                                    {invitation.description}
-                                </p>
-                            </TableCell>
-                            <TableCell>
-                                <Badge className={projectInvitationStatusColor(invitation.status)}>{projectInvitationStatusDescription(invitation.status)}</Badge>
-                                <p className="mt-1 text-sm text-muted-foreground">
-                                    Convite enviado em {formatDate(invitation.created_at, "dd/MM/yyyy 'às' HH:mm")}
-                                </p>
-                            </TableCell>
-                            <TableCell className="text-right">
-                                {invitation.status === PROJECT_INVITATION_STATUS.PENDING && (
-                                    <Button size="icon" variant="destructive" title="Cancelar" onClick={() => handleOpenCancelInviteModal(invitation)}>
-                                        <SquareX />
-                                    </Button>
-                                )}
-                            </TableCell>
+                                </TableCell>
+                                <TableCell>
+                                    <Badge>{member.role?.name}</Badge>
+                                    <p className="mt-1 text-sm text-muted-foreground">
+                                        {member.description}
+                                    </p>
+                                </TableCell>
+                                <TableCell>
+                                    {member.user.email}
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex items-center justify-end gap-2 min-h-9">
+                                        <Button size="icon" variant="outline" title="Editar" onClick={() => handleOpenEditMemberModal(member)}>
+                                            <Edit />
+                                        </Button>
+
+                                        <Button size="icon" variant="destructive" title="Remover membro" onClick={() => handleOpenRemoveMemberModal(member)}>
+                                            <SquareX />
+                                        </Button>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+
+                <hr className="mt-6 mb-4" />
+
+                <h3 className="text-lg font-bold">Convites</h3>
+
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-4/12">Usuário</TableHead>
+                            <TableHead className="w-3/12">Cargo</TableHead>
+                            <TableHead className="w-3/12">Status</TableHead>
+                            <TableHead className="w-2/12"></TableHead>
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                    </TableHeader>
+
+                    <TableBody>
+                        {project.invitations?.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={3}>
+                                    <p className="text-muted-foreground text-md text-center py-3">
+                                        Sem convites encontrados
+                                    </p>
+                                </TableCell>
+                            </TableRow>
+                        )}
+
+                        {project.invitations?.map(invitation => (
+                            <TableRow key={invitation.id}>
+                                <TableCell>
+                                    {invitation.user ? (
+                                        <div className="flex items-center gap-3">
+                                            <Avatar className="size-12 rounded-full">
+                                                <AvatarImage src={invitation.user.photo} alt={invitation.user.name} />
+                                                <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+                                                    {getInitials(invitation.user.name)}
+                                                </AvatarFallback>
+                                            </Avatar>
+
+                                            <div>
+                                                <span className="block text-lg font-medium truncate -mb-1">{invitation.user.name}</span>
+                                                <span className="text-muted-foreground">{invitation.user.email}</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <span className="block text-lg font-medium truncate -mb-1">{invitation.invitation?.email}</span>
+                                    )}
+                                </TableCell>
+                                <TableCell>
+                                    <Badge>{invitation.role?.name}</Badge>
+                                    <p className="mt-1 text-sm text-muted-foreground">
+                                        {invitation.description}
+                                    </p>
+                                </TableCell>
+                                <TableCell>
+                                    <Badge className={projectInvitationStatusColor(invitation.status)}>{projectInvitationStatusDescription(invitation.status)}</Badge>
+                                    <p className="mt-1 text-sm text-muted-foreground">
+                                        Convite enviado em {formatDate(invitation.created_at, "dd/MM/yyyy 'às' HH:mm")}
+                                    </p>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    {invitation.status === PROJECT_INVITATION_STATUS.PENDING && (
+                                        <Button size="icon" variant="destructive" title="Cancelar" onClick={() => handleOpenCancelInviteModal(invitation)}>
+                                            <SquareX />
+                                        </Button>
+                                    )}
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
 
             <ProjectMemberDialog open={editMemberModal} onOpenChange={setEditMemberModal} roles={roles} member={member} />
             <ProjectMemberRemoveAlertDialog open={removeMemberModal} onOpenChange={setRemoveMemberModal} member={member} />

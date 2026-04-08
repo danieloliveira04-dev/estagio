@@ -18,7 +18,7 @@ return new class extends Migration
             $table->dateTime('startDate')->nullable();
             $table->dateTime('endDate')->nullable();
             $table->foreignId('projectId')->constrained('projects');
-            $table->foreignId('taskStatusId')->constrained('tasksStatus')->nullable();
+            $table->foreignId('taskStatusId')->nullable()->constrained('tasksStatus');
             $table->foreignId('projectMemberId')->nullable()->constrained('projectsMembers');
             $table->timestamps();
             $table->softDeletes();

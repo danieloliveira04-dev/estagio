@@ -14,6 +14,12 @@ class Task extends Model
 
     protected $fillable = ['id', 'title', 'description', 'startDate', 'endDate', 'projectId', 'taskStatusId', 'projectColumnId'];
 
+    //--
+
+    public function column() {
+        return $this->belongsTo(ProjectColumn::class, 'projectColumnId');
+    }
+
     public function taskStatus() {
         return $this->hasOne(TaskStatus::class, 'id', 'taskStatusId');
     }
@@ -22,4 +28,7 @@ class Task extends Model
         return $this->hasMany(TaskHistory::class, 'taskId');
     }
 
+    public function tags() {
+        return $this->belongsToMany(Tag::class, 'tagsTasks', 'taskId', 'tagId')->withTimestamps();
+    }
 }

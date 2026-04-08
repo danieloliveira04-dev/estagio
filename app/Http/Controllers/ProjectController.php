@@ -13,6 +13,9 @@ use App\Models\ProjectColumn;
 use App\Models\ProjectInvitation;
 use App\Models\ProjectMember;
 use App\Models\Role;
+use App\Models\Tag;
+use App\Models\Task;
+use App\Models\TaskHistory;
 use App\Models\TaskStatus;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -30,8 +33,11 @@ class ProjectController extends Controller {
                 $membersQuery->with(['user', 'role']);
             },
             'columns' => function($columnsQuery) {
-                $columnsQuery->with(['tasks.taskStatus'])
-                    ->orderBy('position');
+                $columnsQuery->with([
+                    'tasks' => function($tasksQuery) {
+                        $tasksQuery->with(['taskStatus', 'tags']);
+                    },
+                ])->orderBy('position');
             },
         ]);
 
@@ -39,6 +45,7 @@ class ProjectController extends Controller {
         return Inertia::render('projects/show', [
             'project' => $project,
             'taskStatus' => TaskStatus::get(),
+            'tags' => Tag::all(),
         ]);
     }
 
@@ -234,6 +241,161 @@ class ProjectController extends Controller {
 
             return redirect()
                 ->to(route('projects.members', $project->id))
+                ->with('flash', [
+                    'type' => 'error',
+                    'message' => $msg,
+                ]);
+        }
+    }
+
+    //-- Tasks
+    public function storeTask(Project $project, Request $request) {
+        $request->validate([
+            'title' => 'required|string|min:3',
+            'description' => 'nullable|string',
+            'startDate' => 'nullable|date',
+            'endDate' => 'nullable|date',
+            'projectColumnId' => 'nullable|exists:projectColumns,id',
+        ]);
+
+        try {
+
+            $column = $request->has('projectColumnId')
+                ? $project->columns->find($request->input('projectColumnId'))
+                : $project->columns->first(fn ($column) =>
+                    $column->taskStatusId == env('taskStatusPendingId')
+                );
+
+            $data = [
+                'title' => $request->input('title'),
+                'description' => $request->input('description'),
+                'startDate' => $request->date('startDate'),
+                'endDate' => $request->date('endDate'),
+                'projectColumnId' => $column?->id,
+                'taskStatusId' => $column?->taskStatusId,
+            ];
+
+            $project->tasks()->create($data);
+
+            return redirect()
+                ->to(route('projects.show', $project->id))
+                ->with('flash', [
+                    'type' => 'success',
+                    'message' => 'Tarefa criada com sucesso.',
+                ]);
+            
+        } catch (\Exception $ex) {
+            LogHelper::exception($ex);
+
+            $msg = 'Ocorreu um erro ao tentar salvar os dados.';
+
+            if (!app()->environment('production')) {
+                $msg .= ' Detalhes: ' . $ex->getMessage();
+            }
+
+            return redirect()
+                ->to(route('projects.show', $project->id))
+                ->with('flash', [
+                    'type' => 'error',
+                    'message' => $msg,
+                ]);
+        }
+    }
+
+    public function updateTask(Project $project, Task $task, Request $request) {
+        $request->validate([
+            'title' => 'required|string|min:3',
+            'description' => 'nullable|string',
+            'startDate' => 'nullable|date',
+            'endDate' => 'nullable|date',
+            'projectColumnId' => 'nullable|exists:projectColumns,id',
+            'tags.*' => 'nullable|exists:tags,id', 
+        ]);
+
+        try {
+
+            DB::beginTransaction();
+
+            $column = $request->has('projectColumnId')
+                ? $project->columns->find($request->input('projectColumnId'))
+                : $task->column;
+
+            $data = [
+                'title' => $request->input('title'),
+                'description' => $request->input('description'),
+                'startDate' => $request->date('startDate'),
+                'endDate' => $request->date('endDate'),
+                'projectColumnId' => $column?->id,
+                'taskStatusId' => $column?->taskStatusId,
+            ];
+
+            $task->update($data);
+
+            $task->tags()->sync($request->input('tags', []));
+
+            DB::commit();
+
+            return redirect()
+                ->to(route('projects.show', $project->id))
+                ->with('flash', [
+                    'type' => 'success',
+                    'message' => 'Tarefa atualizada com sucesso.',
+                ]);
+
+        } catch (\Exception $ex) {
+            DB::rollBack();
+
+            LogHelper::exception($ex);
+
+            $msg = 'Ocorreu um erro ao tentar salvar os dados.';
+
+            if (!app()->environment('production')) {
+                $msg .= ' Detalhes: ' . $ex->getMessage();
+            }
+
+            return redirect()
+                ->to(route('projects.show', $project->id))
+                ->with('flash', [
+                    'type' => 'error',
+                    'message' => $msg,
+                ]);
+        }
+    }
+
+    public function deleteTask(Project $project, Task $task, Request $request) {
+        try {
+            DB::beginTransaction();
+
+            $task->taskHistory()->create([
+                'userId' => $request->user()->id,
+                'action' => TaskHistory::ACTION_DELETED,
+                'description' => 'Tarefa excluída manualmente.'
+            ]);
+
+            $task->delete();
+
+            DB::commit();
+
+            return redirect()
+                ->to(route('projects.show', $project->id))
+                ->with('flash', [
+                    'type' => 'success',
+                    'message' => 'Tarefa excluída com sucesso.',
+                ]);
+            
+        } catch (\Exception $ex) {
+            DB::rollBack();
+        
+            LogHelper::exception($ex);
+
+            $msg = 'Ocorreu um erro ao tentar salvar os dados.';
+
+            if (!app()->environment('production')) {
+                $msg .= ' Detalhes: ' . $ex->getMessage();
+            }
+
+            return redirect()
+                ->to(route('projects.show', $project->id))
                 ->with('flash', [
                     'type' => 'error',
                     'message' => $msg,

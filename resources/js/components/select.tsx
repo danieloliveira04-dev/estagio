@@ -6,7 +6,7 @@ export interface SelectProps {
     required?: boolean;
     disabled?: boolean;
     value?: string;
-    onValueChange?: (value?: string) => void;
+    onValueChange?: (value?: string | null) => void;
     items: Record<string | number, string>;
 }
 
@@ -19,16 +19,11 @@ export function Select({
     required,
     disabled,
 }: SelectProps) {
-
-    const handleValueChange = (value: string) => {
-        onValueChange?.(value !== "none" ? value : undefined);
-    }
-
     return (
         <UiSelect.Select
             name={name}
             value={value}
-            onValueChange={handleValueChange}
+            onValueChange={onValueChange}
             required={required}
             disabled={disabled}
         >

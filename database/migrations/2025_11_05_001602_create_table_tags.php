@@ -18,10 +18,10 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        Schema::create('tasgsTasks', function (Blueprint $table) {
+        Schema::create('tagsTasks', function (Blueprint $table) {
             $table->foreignId('tagId')->constrained('tags')->onDelete('cascade');
             $table->foreignId('taskId')->constrained('tasks')->onDelete('cascade');
-            $table->timestamp('created_at')->useCurrent();
+            $table->timestamps();
 
             $table->primary(['tagId', 'taskId']);
         });
@@ -32,7 +32,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tasgsTasks');
+        Schema::dropIfExists('tagsTasks');
         Schema::dropIfExists('tags');
     }
 };
