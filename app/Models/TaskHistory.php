@@ -24,9 +24,15 @@ class TaskHistory extends Model
 
     protected $table = 'taskHistory';
 
-    protected $fillable = ['id', 'taskId', 'taskStatusId', 'userId', 'action', 'description'];
+    protected $fillable = ['id', 'taskId', 'startDate', 'endDate', 'taskStatusId', 'projectMemberId', 'userId', 'action', 'description'];
+
+    //--
 
     public function tasks() {
         return $this->belongsTo(Task::class, 'id', 'taskStatusId');
+    }
+
+    public function assignee() {
+        return $this->belongsTo(ProjectMember::class, 'projectMemberId');
     }
 }

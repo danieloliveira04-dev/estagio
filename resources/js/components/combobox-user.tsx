@@ -13,19 +13,21 @@ import {
 import { useInitials } from '@/hooks/use-initials';
 import { getUsersAutocomplete } from '@/services/users';
 import { User } from '@/types';
-import { Combobox as ComboboxPrimitive } from '@base-ui/react';
-import { X } from 'lucide-react';
 import * as React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
+import { User as UserIcon } from 'lucide-react';
 
 export interface ComboboxUserProps {
     placeholder?: string;
-    value?: number;
+    value?: number | null;
     onChange?: (value: number | null) => void;
+    showInput?: boolean;
 }
 
-export function ComboboxUser({ placeholder, value, onChange }: ComboboxUserProps) {
+type UserItem = User | { id: null; name: string; email?: string; photo?: string | null };
+
+export function ComboboxUser({ placeholder, value, onChange, showInput = true }: ComboboxUserProps) {
     const getInitials = useInitials();
     const [users, setUsers] = React.useState<User[]>([]);
 
@@ -38,67 +40,100 @@ export function ComboboxUser({ placeholder, value, onChange }: ComboboxUserProps
         getUsers();
     }, []);
 
+    const items: UserItem[] = React.useMemo(() => {
+        return [
+            {
+                id: null,
+                name: 'Não atribuído',
+                email: '',
+                photo: null,
+            },
+            ...users,
+        ];
+    }, [users]);
+
     return (
-        <Combobox autoHighlight items={users} value={value} onValueChange={onChange}>
-            <div className="flex gap-2">
-                <ComboboxTrigger
-                    render={
-                        <Button type="button" variant="outline" className="block h-11 w-full text-left group-has-data-[slot=combobox-clear]/input-group:hidden">
-                            <ComboboxValue>
-                                {(value: number) => {
-                                    const user = users.find((u) => u.id === value);
-
-                                    if (!user) {
-                                        return <span className="text-muted-foreground">{placeholder ?? 'Selecione um usuário'}</span>;
-                                    }
-
+        <Combobox
+            autoHighlight
+            items={items}
+            value={value ?? null}
+            onValueChange={(val) => onChange?.(val ?? null)}
+        >
+            <ComboboxTrigger
+                render={
+                    <Button
+                        type="button"
+                        variant="outline"
+                        className="block h-10 w-full text-left shrink"
+                    >
+                        <ComboboxValue>
+                            {(val: number | null) => {
+                                if (!val) {
                                     return (
-                                        <div className="flex items-center gap-2">
-                                            <Avatar className="size-6 rounded-full">
-                                                <AvatarImage src={user.photo} alt={user.name} />
-                                                <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
-                                                    {getInitials(user.name)}
-                                                </AvatarFallback>
-                                            </Avatar>
-
-                                            <span className="truncate">{user.name}</span>
-                                        </div>
+                                        <span className="text-muted-foreground">
+                                            {placeholder ?? 'Não atribuído'}
+                                        </span>
                                     );
-                                }}
-                            </ComboboxValue>
-                        </Button>
-                    }
-                />
-                {!!Number(value) && (
-                    <ComboboxPrimitive.Clear
-                        data-slot="combobox-clear"
-                        render={
-                            <Button className="size-11">
-                                <X />
-                            </Button>
-                        }
-                    />
-                )}
-            </div>
+                                }
+
+                                const user = users.find((u) => u.id === val);
+
+                                if (!user) return null;
+
+                                return (
+                                    <div className="flex items-center gap-2">
+                                        <Avatar className="size-6 rounded-full">
+                                            <AvatarImage src={user.photo} alt={user.name} />
+                                            <AvatarFallback className="text-xs rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+                                                {getInitials(user.name)}
+                                            </AvatarFallback>
+                                        </Avatar>
+
+                                        <span className="truncate">{user.name}</span>
+                                    </div>
+                                );
+                            }}
+                        </ComboboxValue>
+                    </Button>
+                }
+            />
 
             <ComboboxContent>
-                <ComboboxInput showTrigger={false} />
+                {showInput && (
+                    <ComboboxInput showTrigger={false} />
+                )}
                 <ComboboxEmpty>Nenhum usuário encontrado.</ComboboxEmpty>
 
                 <ComboboxList>
-                    {(item: User) => (
-                        <ComboboxItem key={item.id} value={item.id}>
+                    {(item: UserItem) => (
+                        <ComboboxItem
+                            key={item.id ?? 'unassigned'}
+                            value={item.id}
+                        >
                             <div className="flex w-full items-center gap-3 py-1">
                                 <Avatar className="h-8 w-8 rounded-full">
-                                    <AvatarImage src={item.photo} alt={item.name} />
-                                    <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
-                                        {getInitials(item.name)}
-                                    </AvatarFallback>
+                                    {item.id === null ? (
+                                        <AvatarFallback>
+                                            <UserIcon />
+                                        </AvatarFallback>
+                                    ) : (
+                                        <>
+                                            <AvatarImage src={item.photo} alt={item.name} />
+                                            <AvatarFallback>
+                                                {getInitials(item.name)}
+                                            </AvatarFallback>
+                                        </>
+                                    )}
                                 </Avatar>
 
                                 <div className="flex flex-col text-sm leading-tight">
                                     <span className="font-medium">{item.name}</span>
-                                    <span className="text-xs text-muted-foreground">{item.email}</span>
+
+                                    {item.id !== null && (
+                                        <span className="text-xs text-muted-foreground">
+                                            {item.email}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         </ComboboxItem>

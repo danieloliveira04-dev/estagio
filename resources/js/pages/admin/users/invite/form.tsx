@@ -85,11 +85,11 @@ export default function AdminUsersInviteForm({ flash, roles }: AdminUsersInviteF
                                     Convidar
                                 </Button>
 
-                                <Button variant="outline" tabIndex={4} asChild>
+                                <Button variant="outline" tabIndex={4} render={
                                     <Link href={list()}>
                                         <ChevronLeft size={16} /> Voltar
                                     </Link>
-                                </Button>
+                                }/>
                             </div>
                         </>
                     )}

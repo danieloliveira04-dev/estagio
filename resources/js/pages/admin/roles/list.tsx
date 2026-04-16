@@ -74,9 +74,9 @@ export default function AdminRolesList({ roles }: AdminRolesListProps) {
                 <Flash flash={flash} className="mb-6" />
             
                 <div className="flex items-center justify-end gap-10 mb-4">
-                    <Button asChild>
+                    <Button render={
                         <Link href={form()}>Adicionar perfil</Link>
-                    </Button>
+                    }/>
                 </div>
 
                 <div>
@@ -110,9 +110,9 @@ export default function AdminRolesList({ roles }: AdminRolesListProps) {
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center justify-end gap-2">
-                                            <Button size="icon" variant="outline" title="Editar" asChild>
+                                            <Button size="icon" variant="outline" title="Editar" render={
                                                 <Link href={edit({ id: role.id })} ><Edit /></Link>
-                                            </Button>
+                                            }/>
                                             <Button 
                                                 size="icon" 
                                                 variant="destructive"

@@ -65,16 +65,15 @@ export default function AdminProjectStatusForm({ projectStatus, flash }: AdminPr
                     </div>
 
                     <div className="flex items-center gap-4 mt-6">
-                        <Button type="submit">
-                            {processing && <LoaderCircle size={16} className="animate-spin" />}
+                        <Button type="submit" loading={processing}>
                             {isEdit ? "Salvar" : "Criar"}
                         </Button>
 
-                        <Button variant="outline" asChild>
+                        <Button variant="outline" render={
                             <Link href={list()}>
                                 <ChevronLeft size={16} /> Voltar
                             </Link>
-                        </Button>
+                        }/>
                     </div>
                 </form>
             </div>

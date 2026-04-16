@@ -25,6 +25,8 @@ class TaskSeeder extends Seeder
                 ->where('roleId', 4)
                 ->get();
 
+            $sequence = 1;
+
             // Criar 5 tarefas de exemplo para cada projeto
             for ($i = 0; $i < 5; $i++) {
                 $random = $collaborators->random();
@@ -35,6 +37,7 @@ class TaskSeeder extends Seeder
                     'projectColumnId' => $column->id,
                     'projectMemberId' => $random->id,
                     'taskStatusId' => $column->taskStatusId,
+                    'sequence'         => $sequence++,
                 ]);
             }
         }

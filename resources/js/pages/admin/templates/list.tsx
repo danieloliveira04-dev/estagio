@@ -38,7 +38,7 @@ interface TemplateDetails {
 export default function AdminTemplateList({ templates }: AdminTemplateListProps) {
     const { flash } = usePage().props as { flash?: FlashType };
     const [search, setSearch] = useState<string>('');
-    const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+    const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [templateToDelete, setTemplateToDelete] = useState<Template | null>(null);
     const [templateDetails, setTemplateDetails] = useState<TemplateDetails | null>(null);
     const [loadingDetails, setLoadingDetails] = useState(false);
@@ -96,9 +96,9 @@ export default function AdminTemplateList({ templates }: AdminTemplateListProps)
                         <Input placeholder="Buscar por nome" className="ps-9" value={search} onChange={handleSearchChange} />
                     </div>
 
-                    <Button asChild>
+                    <Button render={
                         <Link href={form()}>Adicionar modelo</Link>
-                    </Button>
+                    }/>
                 </div>
 
                 <div>
@@ -128,11 +128,11 @@ export default function AdminTemplateList({ templates }: AdminTemplateListProps)
                                     <TableCell>{template.name}</TableCell>
                                     <TableCell>
                                         <div className="flex items-center justify-end gap-2">
-                                            <Button size="icon" variant="outline" title="Editar" asChild>
+                                            <Button size="icon" variant="outline" title="Editar" render={
                                                 <Link href={edit({ id: template.id })}>
                                                     <Edit />
                                                 </Link>
-                                            </Button>
+                                            }/>
                                             <Button
                                                 size="icon"
                                                 variant="destructive"

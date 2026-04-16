@@ -105,9 +105,9 @@ export function ProjectInviteMemberDialog({ open, onOpenChange, projectId, roles
                     </div>
 
                     <DialogFooter className="mt-6">
-                        <DialogClose asChild>
+                        <DialogClose render={
                             <Button variant="outline">Cancelar</Button>
-                        </DialogClose>
+                        }/>
 
                         <Button type="submit" onClick={submit} disabled={!emailChecked}>
                             Convidar
@@ -159,11 +159,11 @@ const InputEmail = ({ value, onChange, onUserFound, onValidated }: InputEmailPro
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
+            <PopoverTrigger render={
                 <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
                     {value || 'Buscar ou digitar e-mail'}
                 </Button>
-            </PopoverTrigger>
+            }/>
 
             <PopoverContent className="w-full p-0">
                 <Command>

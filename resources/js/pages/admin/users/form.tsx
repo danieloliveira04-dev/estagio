@@ -147,11 +147,11 @@ export default function AdminUsersForm({ user, roles, flash }: AdminUsersFormPro
                             Salvar
                         </Button>
 
-                        <Button variant="outline" tabIndex={4} asChild>
+                        <Button variant="outline" tabIndex={4} render={
                             <Link href={list()}>
                                 <ChevronLeft size={16} /> Voltar
                             </Link>
-                        </Button>
+                        }/>
                     </div>
                 </form>
         

@@ -44,7 +44,7 @@ export default function AdminProjectList({ projects }: AdminProjectListProps) {
     const { flash } = usePage().props as { flash?: FlashType };
 
     const [search, setSearch] = useState("");
-    const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+    const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const [projectToClose, setProjectToClose] = useState<Project | null>(null);
     const [projectDetails, setProjectDetails] = useState<ProjectDetails | null>(null);
@@ -118,9 +118,9 @@ export default function AdminProjectList({ projects }: AdminProjectListProps) {
                         />
                     </div>
 
-                    <Button asChild>
+                    <Button render={
                         <Link href={form()}>Adicionar projeto</Link>
-                    </Button>
+                    }/>
                 </div>
 
                 {/* 📋 Tabela de projetos */}
@@ -165,11 +165,11 @@ export default function AdminProjectList({ projects }: AdminProjectListProps) {
                                         {!proj.closeReason && (
                                             <>
                                                 {/* Editar */}
-                                                <Button size="icon" variant="outline" title="Editar" asChild>
+                                                <Button size="icon" variant="outline" title="Editar" render={
                                                     <Link href={edit({ project: proj.id })}>
                                                         <Edit />
                                                     </Link>
-                                                </Button>
+                                                }/>
 
                                                 {/* Encerrar */}
                                                 <Button

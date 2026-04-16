@@ -42,7 +42,7 @@ export default function ProjectTask({task, onClick, onDelete}: ProjectTaskProps)
             )} 
 
             <div className="flex items-end justify-between">
-                <span className="text-xs text-muted-foreground italic tracking-widest">#{task.id}</span>
+                <span className="text-xs font-medium text-muted-foreground tracking-widest">{task.code}</span>
                 <Avatar className="size-7">
                     <AvatarFallback className="bg-muted text-muted-foreground">
                         <User className="size-4" />

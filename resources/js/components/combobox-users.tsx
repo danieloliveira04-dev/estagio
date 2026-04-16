@@ -47,7 +47,7 @@ export function ComboboxUsers({ placeholder, value, onChange }: ComboboxUsersPro
             value={value}
             onValueChange={onChange}
         >
-            <ComboboxChips ref={anchor} className="w-full">
+            <ComboboxChips ref={anchor} className="w-full min-h-10">
                 <ComboboxValue>
                     {(values: number[]) => (
                         <>
@@ -59,11 +59,11 @@ export function ComboboxUsers({ placeholder, value, onChange }: ComboboxUsersPro
                                 if (!user) return null;
 
                                 return (
-                                    <ComboboxChip key={value} className="!px-1.5 py-1.5 rounded-full h-fit">
+                                    <ComboboxChip key={value} className="!px-1.5 py-1.5 rounded-lg h-fit">
                                         <div className="flex items-center gap-2 mr-0.5">
                                             <Avatar className="size-6">
                                                 <AvatarImage src={user.photo} alt={user.name} />
-                                                <AvatarFallback className="bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+                                                <AvatarFallback className="text-xs rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
                                                     {getInitials(user.name)}
                                                 </AvatarFallback>
                                             </Avatar>

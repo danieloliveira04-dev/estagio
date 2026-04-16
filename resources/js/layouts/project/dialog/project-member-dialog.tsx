@@ -75,9 +75,9 @@ export function ProjectMemberDialog({open, onOpenChange, roles, member}: Project
                     </div>
 
                     <DialogFooter className="mt-6">
-                        <DialogClose asChild>
+                        <DialogClose render={
                             <Button variant="outline">Voltar</Button>
-                        </DialogClose>
+                        }/>
 
                         <Button type="submit" onClick={submit} disabled={processing}>
                             {processing ? 'Salvando...' : 'Salvar'}

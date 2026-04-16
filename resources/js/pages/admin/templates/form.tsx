@@ -99,11 +99,11 @@ export default function AdminTemplateForm({ template, taskStatus, flash }: Admin
                             {isEdit ? "Salvar" : "Criar"}
                         </Button>
 
-                        <Button variant="outline" asChild>
+                        <Button variant="outline" render={
                             <Link href={list()}>
                                 <ChevronLeft size={16} /> Voltar
                             </Link>
-                        </Button>
+                        }/>
                     </div>
                 </form>
             </div>

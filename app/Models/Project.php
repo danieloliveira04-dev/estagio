@@ -9,7 +9,7 @@ class Project extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['id', 'name', 'description', 'customerUserId', 'projectStatusId', 'expectedEndAt', 'finishedAt', 'closeReason'];
+    protected $fillable = ['id', 'name', 'prefix', 'description', 'customerUserId', 'projectStatusId', 'expectedEndAt', 'finishedAt', 'closeReason'];
     
     //--
 

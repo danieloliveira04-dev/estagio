@@ -40,7 +40,7 @@ interface ProjectStatusDetails {
 export default function AdminProjectStatusList({ projectStatus }: AdminProjectStatusListProps) {
     const { flash } = usePage().props as { flash?: FlashType };
     const [search, setSearch] = useState<string>('');
-    const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+    const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [statusToDelete, setStatusToDelete] = useState<ProjectStatus | null>(null);
     const [statusDetails, setStatusDetails] = useState<ProjectStatusDetails | null>(null);
     const [loadingDetails, setLoadingDetails] = useState(false);
@@ -103,9 +103,9 @@ export default function AdminProjectStatusList({ projectStatus }: AdminProjectSt
                         />
                     </div>
 
-                    <Button asChild>
+                    <Button render={
                         <Link href={form()}>Adicionar status</Link>
-                    </Button>
+                    }/>
                 </div>
 
                 <div>
@@ -135,11 +135,11 @@ export default function AdminProjectStatusList({ projectStatus }: AdminProjectSt
                                     <TableCell>{status.name}</TableCell>
                                     <TableCell>
                                         <div className="flex items-center justify-end gap-2">
-                                            <Button size="icon" variant="outline" title="Editar" asChild>
+                                            <Button size="icon" variant="outline" title="Editar" render={
                                                 <Link href={edit({ projectStatus: status.id })}>
                                                     <Edit />
                                                 </Link>
-                                            </Button>
+                                            }/>
                                             <Button
                                                 size="icon"
                                                 variant="destructive"

@@ -54,11 +54,11 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     {/* Mobile Menu */}
                     <div className="lg:hidden">
                         <Sheet>
-                            <SheetTrigger asChild>
+                            <SheetTrigger render={
                                 <Button variant="ghost" size="icon" className="mr-2 h-[34px] w-[34px]">
                                     <Menu className="h-5 w-5" />
                                 </Button>
-                            </SheetTrigger>
+                            }/>
                             <SheetContent side="left" className="flex h-full w-64 flex-col items-stretch justify-between bg-sidebar">
                                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                                 <SheetHeader className="flex justify-start text-left">
@@ -152,7 +152,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                             </div>
                         </div>
                         <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
+                            <DropdownMenuTrigger render={
                                 <Button variant="ghost" className="size-10 rounded-full p-1">
                                     <Avatar className="size-8 overflow-hidden rounded-full">
                                         <AvatarImage src={auth.user.avatar as string} alt={auth.user.name} />
@@ -161,7 +161,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                         </AvatarFallback>
                                     </Avatar>
                                 </Button>
-                            </DropdownMenuTrigger>
+                            }/>
                             <DropdownMenuContent className="w-56" align="end">
                                 <UserMenuContent user={auth.user} />
                             </DropdownMenuContent>

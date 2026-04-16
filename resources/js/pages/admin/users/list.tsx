@@ -40,7 +40,7 @@ interface UserDetails {
 export default function AdminUsersList({ users }: AdminUsersListProps) {
     const { flash } = usePage().props as { flash?: FlashType };
     const [search, setSearch] = useState<string>('');
-    const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+    const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [userToDelete, setUserToDelete] = useState<User | null>(null);
     const [userDetails, setUserDetails] = useState<UserDetails | null>(null); 
     const [loadingDetails, setLoadingDetails] = useState(false);
@@ -104,9 +104,9 @@ export default function AdminUsersList({ users }: AdminUsersListProps) {
                         <Input placeholder="Buscar por nome ou e-mail" className="ps-9" value={search} onChange={handleSearchChange} />
                     </div>
 
-                    <Button asChild>
+                    <Button render={
                         <Link href={invite.form()}>Adicionar usuário</Link>
-                    </Button>
+                    }/>
                 </div>
 
                 <div>
@@ -157,9 +157,9 @@ export default function AdminUsersList({ users }: AdminUsersListProps) {
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center justify-end gap-2">
-                                            <Button size="icon" variant="outline" title="Editar" asChild>
+                                            <Button size="icon" variant="outline" title="Editar" render={
                                                 <Link href={edit({ id: user.id })} ><Edit /></Link>
-                                            </Button>
+                                            }/>
                                             <Button 
                                                 size="icon" 
                                                 variant="destructive"

@@ -92,6 +92,7 @@ export interface ProjectMember {
 export interface Project {
     id: number;
     name: string;
+    prefix: string;
     description?: string;
     customerUserId?: number;
     projectStatusId: number;
@@ -179,6 +180,8 @@ export interface Tag {
 
 export interface Task {
     id: number;
+    code: string;
+    sequence: number;
     title: string;
     description?: string;
     startDate?: Date;

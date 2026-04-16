@@ -40,7 +40,7 @@ interface TaskStatusDetails {
 export default function AdminTaskStatusList({ taskStatus }: AdminTaskStatusListProps) {
     const { flash } = usePage().props as { flash?: FlashType };
     const [search, setSearch] = useState<string>('');
-    const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+    const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [statusToDelete, setStatusToDelete] = useState<TaskStatus | null>(null);
     const [statusDetails, setStatusDetails] = useState<TaskStatusDetails | null>(null);
     const [loadingDetails, setLoadingDetails] = useState(false);
@@ -104,9 +104,9 @@ export default function AdminTaskStatusList({ taskStatus }: AdminTaskStatusListP
                         <Input placeholder="Buscar por nome ou e-mail" className="ps-9" value={search} onChange={handleSearchChange} />
                     </div>
 
-                    <Button asChild>
+                    <Button render={
                         <Link href={form()}>Adicionar status</Link>
-                    </Button>
+                    }/>
                 </div>
 
                 <div>
@@ -136,11 +136,11 @@ export default function AdminTaskStatusList({ taskStatus }: AdminTaskStatusListP
                                     <TableCell>{status.name}</TableCell>
                                     <TableCell>
                                         <div className="flex items-center justify-end gap-2">
-                                            <Button size="icon" variant="outline" title="Editar" asChild>
+                                            <Button size="icon" variant="outline" title="Editar" render={
                                                 <Link href={edit({ id: status.id })}>
                                                     <Edit />
                                                 </Link>
-                                            </Button>
+                                            }/>
                                             <Button
                                                 size="icon"
                                                 variant="destructive"

@@ -21,9 +21,9 @@ export default function DeleteUser() {
                 </div>
 
                 <Dialog>
-                    <DialogTrigger asChild>
+                    <DialogTrigger render={
                         <Button variant="destructive">Delete account</Button>
-                    </DialogTrigger>
+                    }/>
                     <DialogContent>
                         <DialogTitle>Are you sure you want to delete your account?</DialogTitle>
                         <DialogDescription>
@@ -60,15 +60,15 @@ export default function DeleteUser() {
                                     </div>
 
                                     <DialogFooter className="gap-2">
-                                        <DialogClose asChild>
+                                        <DialogClose render={
                                             <Button variant="secondary" onClick={() => resetAndClearErrors()}>
                                                 Cancel
                                             </Button>
-                                        </DialogClose>
+                                        }/>
 
-                                        <Button variant="destructive" disabled={processing} asChild>
+                                        <Button variant="destructive" disabled={processing} render={
                                             <button type="submit">Delete account</button>
-                                        </Button>
+                                        }/>
                                     </DialogFooter>
                                 </>
                             )}

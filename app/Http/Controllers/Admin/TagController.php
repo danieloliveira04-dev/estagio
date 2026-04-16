@@ -69,6 +69,15 @@ class TagController extends Controller
     }
 
     public function delete(Tag $tag): RedirectResponse {
+        if($tag->tasks()->exists()) {
+            return redirect()
+                ->route('admin.tags.list')
+                ->with('flash', [
+                    'type' => 'error',
+                    'message' => 'Não é possível excluir esta tag, pois existem tarefas vinculadas a ela.'
+                ]);
+        }
+
         try {    
             $tag->delete();
 
@@ -139,7 +148,7 @@ class TagController extends Controller
 
         return response()->json([
             'tag' => $tag,
-            'canDelete' => true,
+            'canDelete' => !$tag->tasks()->exists(),
         ]);
     }
 }

@@ -260,13 +260,23 @@ class ProjectController extends Controller {
 
         try {
 
+            DB::beginTransaction();
+
             $column = $request->has('projectColumnId')
                 ? $project->columns->find($request->input('projectColumnId'))
                 : $project->columns->first(fn ($column) =>
                     $column->taskStatusId == env('taskStatusPendingId')
                 );
 
+            $lastSequence = $project->tasks()
+                ->withTrashed()
+                ->lockForUpdate()
+                ->max('sequence');
+
+            $nextSequence = ($lastSequence ?? 0) + 1;
+
             $data = [
+                'sequence' => $nextSequence,
                 'title' => $request->input('title'),
                 'description' => $request->input('description'),
                 'startDate' => $request->date('startDate'),
@@ -277,6 +287,8 @@ class ProjectController extends Controller {
 
             $project->tasks()->create($data);
 
+            DB::commit();
+
             return redirect()
                 ->to(route('projects.show', $project->id))
                 ->with('flash', [
@@ -285,6 +297,8 @@ class ProjectController extends Controller {
                 ]);
             
         } catch (\Exception $ex) {
+            DB::rollBack();
+
             LogHelper::exception($ex);
 
             $msg = 'Ocorreu um erro ao tentar salvar os dados.';

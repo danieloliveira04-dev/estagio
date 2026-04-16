@@ -12,10 +12,20 @@ class Task extends Model
 
     protected $table = 'tasks';
 
-    protected $fillable = ['id', 'title', 'description', 'startDate', 'endDate', 'projectId', 'taskStatusId', 'projectColumnId'];
+    protected $fillable = ['id', 'sequence', 'title', 'description', 'startDate', 'endDate', 'projectId', 'taskStatusId', 'projectColumnId'];
+
+    protected $appends = ['code'];
+
+    public function getCodeAttribute() {
+        return $this->project->prefix . '-' . $this->sequence;
+    }
 
     //--
 
+    public function project() {
+        return $this->belongsTo(Project::class, 'projectId');
+    }
+ 
     public function column() {
         return $this->belongsTo(ProjectColumn::class, 'projectColumnId');
     }

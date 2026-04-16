@@ -38,7 +38,7 @@ interface TagDetails {
 export default function AdminTagList({ tags }: AdminTagListProps) {
     const { flash } = usePage().props as { flash?: FlashType };
     const [search, setSearch] = useState<string>('');
-    const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+    const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [tagToDelete, setTagToDelete] = useState<Tag | null>(null);
     const [tagDetails, setTagDetails] = useState<TagDetails | null>(null);
     const [loadingDetails, setLoadingDetails] = useState(false);
@@ -96,9 +96,7 @@ export default function AdminTagList({ tags }: AdminTagListProps) {
                         <Input placeholder="Buscar por nome" className="ps-9" value={search} onChange={handleSearchChange} />
                     </div>
 
-                    <Button asChild>
-                        <Link href={form()}>Adicionar tag</Link>
-                    </Button>
+                    <Button render={<Link href={form()}>Adicionar tag</Link>} />
                 </div>
 
                 <div>
@@ -128,11 +126,12 @@ export default function AdminTagList({ tags }: AdminTagListProps) {
                                     <TableCell>{tag.name}</TableCell>
                                     <TableCell>
                                         <div className="flex items-center justify-end gap-2">
-                                            <Button size="icon" variant="outline" title="Editar" asChild>
+                                            <Button size="icon" variant="outline" title="Editar" render={
                                                 <Link href={edit({ id: tag.id })}>
                                                     <Edit />
                                                 </Link>
-                                            </Button>
+                                            }/>
+                                            
                                             <Button
                                                 size="icon"
                                                 variant="destructive"
@@ -177,6 +176,12 @@ export default function AdminTagList({ tags }: AdminTagListProps) {
                                 Tem certeza que deseja excluir a tag{" "}
                                 <strong>{tagToDelete.name}</strong>? Esta ação não pode ser desfeita.
                             </AlertDialogDescription>
+
+                             {!tagDetails?.canDelete && (
+                                <p className="text-red-500 text-sm mt-2">
+                                    Não é possível excluir esta tag, pois existem tarefas vinculadas a ela.
+                                </p>
+                            )}
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <Button variant="outline" onClick={() => setTagToDelete(null)}>

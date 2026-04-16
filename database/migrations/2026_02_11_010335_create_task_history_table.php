@@ -14,7 +14,10 @@ return new class extends Migration
         Schema::create('taskHistory', function (Blueprint $table) {
             $table->id();
             $table->foreignId('taskId')->constrained('tasks')->cascadeOnDelete();
+            $table->dateTime('startDate')->nullable();
+            $table->dateTime('endDate')->nullable();
             $table->foreignId('taskStatusId')->nullable()->constrained('tasksStatus')->nullOnDelete();
+            $table->foreignId('projectMemberId')->nullable()->constrained('projectsMembers');
             $table->foreignId('userId')->nullable()->constrained('users')->nullOnDelete();
             $table->enum('action', [
                 'created',            // tarefa criada
@@ -31,6 +34,7 @@ return new class extends Migration
                 'deleted'             // tarefa excluída
             ]);
             $table->text('description')->nullable();
+            $table->json('task');
             $table->timestamps();
             $table->softDeletes();
         });

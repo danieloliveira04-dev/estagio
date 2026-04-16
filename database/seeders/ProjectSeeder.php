@@ -31,11 +31,13 @@ class ProjectSeeder extends Seeder
         $projects = [
             [
                 'name' => 'Sistema de Gestão',
+                'prefix' => 'SGT',
                 'description' => 'Projeto para desenvolvimento de um sistema de gestão interna.',
                 'projectStatusId' => 1, // exemplo: Desenvolvimento
             ],
             [
                 'name' => 'Site Institucional',
+                'prefix' => 'SIT',
                 'description' => 'Projeto para criação do novo site da empresa.',
                 'projectStatusId' => 2, // exemplo: Homologação
             ],

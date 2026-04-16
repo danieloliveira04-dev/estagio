@@ -7,6 +7,7 @@ use App\Helpers\LogHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Models\TaskHistory;
+use App\Models\Template;
 use Illuminate\Http\Request;
 use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
@@ -181,28 +182,36 @@ class ProjectController extends Controller {
     public function store(Request $request): RedirectResponse {
         $request->validate([
             'name' => 'required|string|min:3|max:120',
+            'prefix' => 'required|string|size:3|unique:projects,prefix',
             'description' => 'nullable|string|max:500',
-            'customerUserId' => 'nullable|exists:users,id',
+            'customerUserId' => 'nullable|integer|exists:users,id',
             'managersIds' => 'required|array|min:1',
             'managersIds.*' => 'integer|exists:users,id',
-            'projectStatusId' => 'nullable|integer|exists:projectsStatus,id',
+            'projectStatusId' => 'required|integer|exists:projectsStatus,id',
             'expectedEndAt' => 'nullable|date|after_or_equal:today',
             'templateId' => 'nullable|integer|exists:templates,id',
         ]);
 
-        $input = $request->all();
-
         try {
 
-            $project = Project::create($input);
+            DB::beginTransaction();
 
-            $project->members()->create([
-                'userId' => $input['customerUserId'],
-                'roleId' => env('roleCustomerId'),
-                'description' => 'Parte interessada principal do projeto',
-            ]);
+            $data = $request->all();
+            $data['prefix'] = strtoupper($data['prefix']);
 
-            $managersData = collect($input['managersIds'])->map(function ($userId) {
+            $project = Project::create($data);
+
+            if($request->filled('customerUserId')) {
+                $project->members()->create([
+                    'userId' => $request->input('customerUserId'),
+                    'roleId' => env('roleCustomerId'),
+                    'description' => 'Parte interessada principal do projeto',
+                ]);
+            }
+
+            //--
+
+            $managersData = collect($request->input('managersIds', []))->map(function ($userId) {
                 return [
                     'userId' => $userId,
                     'roleId' => env('roleManagerId'),
@@ -212,6 +221,24 @@ class ProjectController extends Controller {
             
             $project->members()->createMany($managersData);
 
+            //--
+
+            if($request->filled('templateId')) {
+                $template = Template::with('columns')->find($request->input('templateId'));
+
+                $columns = $template->columns->map(function($column, $index) {
+                    return [
+                        'name' => $column->name,
+                        'taskStatusId' => $column->taskStatusId,
+                        'position' => $index,   
+                    ];
+                });
+
+                $project->columns()->createMany($columns);
+            }
+
+            DB::commit();
+
             return redirect()
                 ->route('admin.projects.list')
                 ->with('flash', [
@@ -220,6 +247,8 @@ class ProjectController extends Controller {
                 ]);
             
         } catch (\Exception $ex) {
+            DB::rollBack();
+
             LogHelper::exception($ex);
 
             $msg = 'Ocorreu um erro ao tentar salvar os dados.';

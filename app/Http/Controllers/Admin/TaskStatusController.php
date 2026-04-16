@@ -69,13 +69,12 @@ class TaskStatusController extends Controller
     }
 
     public function delete(TaskStatus $taskStatus): RedirectResponse {
-        if(!$taskStatus->tasks->isEmpty()) {
+        if($taskStatus->tasks()->exists()) {
             return redirect()
                 ->route('admin.taskStatus.list')
                 ->with('flash', [
                     'type' => 'error',
-                    'message' => 'Não é possível excluir este perfil, pois está vinculado aos usuários: ' 
-                        . $taskStatus->users()->pluck('name')->join(', ')
+                    'message' => 'Não é possível excluir este status de tarefa, pois existem tarefas vinculadas a ele.'
                 ]);
         }
 
