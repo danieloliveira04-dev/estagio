@@ -1,9 +1,14 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDate } from "@/lib/utils";
 import { Task } from "@/types";
 import { Clock, Ellipsis, Trash2, User } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { PopoverComboboxUser } from "@/components/popover-combobox-user";
+import { useInitials } from "@/hooks/use-initials";
+import { useForm } from "@inertiajs/react";
+import { useEffect } from "react";
+import tasks from "@/routes/projects/tasks";
 
 interface ProjectTaskProps {
     task: Task;
@@ -12,6 +17,22 @@ interface ProjectTaskProps {
 };
 
 export default function ProjectTask({task, onClick, onDelete}: ProjectTaskProps) {
+    const getInitials = useInitials();
+
+    const {data, setData, post, processing} = useForm({
+        _method: 'put',
+        projectMemberId: task.projectMemberId, 
+        
+    });
+
+    useEffect(() => {
+        if(data.projectMemberId != task.projectMemberId) {
+            post(tasks.update({ project: task.projectId, task: task.id }).url, {
+                preserveScroll: true,
+            });
+        }
+    }, [data]);
+
     return (
         <div className="bg-card shadow p-3 space-y-1 cursor-pointer hover:bg-neutral-200/10" onClick={onClick}>
             <div className="flex items-start gap-1">
@@ -43,11 +64,27 @@ export default function ProjectTask({task, onClick, onDelete}: ProjectTaskProps)
 
             <div className="flex items-end justify-between">
                 <span className="text-xs font-medium text-muted-foreground tracking-widest">{task.code}</span>
-                <Avatar className="size-7">
-                    <AvatarFallback className="bg-muted text-muted-foreground">
-                        <User className="size-4" />
-                    </AvatarFallback>
-                </Avatar>
+
+                <PopoverComboboxUser value={task.projectMemberId} onChange={(value) => setData('projectMemberId', value ? value : undefined)} showInput>
+                    {(user) => {
+                        if(!user) {
+                            return (
+                                <Avatar className="size-7">
+                                    <AvatarFallback className="bg-muted text-muted-foreground">
+                                        <User className="size-4" />
+                                    </AvatarFallback>
+                                </Avatar>
+                            );
+                        }
+
+                        return (
+                            <Avatar className="size-7">
+                                <AvatarImage src={user.photo} alt={user.name} />
+                                <AvatarFallback className="bg-muted text-muted-foreground">{getInitials(user.name)}</AvatarFallback>
+                            </Avatar>
+                        );
+                    }}
+                </PopoverComboboxUser>
             </div>
         </div>
     );

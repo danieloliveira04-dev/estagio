@@ -12,7 +12,7 @@ class Task extends Model
 
     protected $table = 'tasks';
 
-    protected $fillable = ['id', 'sequence', 'title', 'description', 'startDate', 'endDate', 'projectId', 'taskStatusId', 'projectColumnId'];
+    protected $fillable = ['id', 'sequence', 'title', 'description', 'startDate', 'endDate', 'projectId', 'taskStatusId', 'projectColumnId', 'projectMemberId'];
 
     protected $appends = ['code'];
 
@@ -40,5 +40,9 @@ class Task extends Model
 
     public function tags() {
         return $this->belongsToMany(Tag::class, 'tagsTasks', 'taskId', 'tagId')->withTimestamps();
+    }
+
+    public function assignee() {
+        return $this->hasOne(ProjectMember::class, 'id', 'projectMemberId');
     }
 }

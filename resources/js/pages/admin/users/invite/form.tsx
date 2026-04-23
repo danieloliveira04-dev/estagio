@@ -1,17 +1,19 @@
+'use client';
+
 import UserController from "@/actions/App/Http/Controllers/Admin/UserController";
 import Flash from "@/components/flash";
 import Heading from "@/components/heading";
 import InputError from "@/components/input-error";
+import { Select } from "@/components/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import AppLayout from "@/layouts/app-layout";
+import { mapWithKeys } from "@/lib/utils";
 import { list } from "@/routes/admin/users";
 import { BreadcrumbItem, FlashType, Role } from "@/types";
-import { Form, Head, Link } from "@inertiajs/react";
+import { useForm, Head, Link } from "@inertiajs/react";
 import { ChevronLeft, LoaderCircle } from "lucide-react";
-import { useState } from "react";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -30,7 +32,17 @@ interface AdminUsersInviteFormProps {
 }
 
 export default function AdminUsersInviteForm({ flash, roles }: AdminUsersInviteFormProps) {
-    const [role, setRole] = useState<string>('');
+
+    const { data, setData, post, processing, errors } = useForm({
+        email: '',
+        roleId: undefined as number | undefined,
+    });
+
+    function submit(e: React.FormEvent) {
+        e.preventDefault();
+
+        post(UserController.inviteStore().url);
+    }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -41,62 +53,56 @@ export default function AdminUsersInviteForm({ flash, roles }: AdminUsersInviteF
 
                 <Flash flash={flash} className="mb-6" />
 
-                <Form 
-                    {...UserController.inviteStore()}
-                    disableWhileProcessing
-                >
-                    {({ processing, errors }) => (
-                        <>
-                            <div className="grid grid-cols-3 gap-6">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="email">E-mail *</Label>
-                                    <Input 
-                                        id="email"
-                                        type="text"
-                                        required
-                                        autoFocus
-                                        tabIndex={1}
-                                        name="email"
-                                        placeholder="E-mail"
-                                    />
-                                    <InputError message={errors.email} className="mt-2" />
-                                </div>
+                <form onSubmit={submit}>
+                    <div className="grid grid-cols-3 gap-6">
+                        <div className="grid gap-2">
+                            <Label htmlFor="email">E-mail *</Label>
+                            <Input
+                                id="email"
+                                type="text"
+                                required
+                                autoFocus
+                                tabIndex={1}
+                                name="email"
+                                value={data.email}
+                                onChange={(e) => setData('email', e.target.value)}
+                                placeholder="E-mail"
+                            />
+                            <InputError message={errors.email} className="mt-2" />
+                        </div>
 
-                                <div className="grid gap-2">
-                                    <Label htmlFor="role">Perfil *</Label>
-                                    <Select value={role} onValueChange={setRole}>
-                                        <SelectTrigger tabIndex={2}>
-                                            <SelectValue placeholder="Perfil" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {roles.map(role => (
-                                                <SelectItem key={role.id} value={String(role.id)}>{role.name}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <input type="hidden" name="roleId" value={role} />
-                                    <InputError message={errors.roleId} className="mt-2" />
-                                </div>
-                            </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="role">Perfil *</Label>
 
-                            <div className="flex items-center gap-4 mt-6">
-                                <Button type="submit" tabIndex={3}>
-                                    {processing && <LoaderCircle size={16} className="animate-spin" />}
-                                    Convidar
-                                </Button>
+                            <Select
+                                name="roleId"
+                                value={data.roleId ? String(data.roleId) : null}
+                                onValueChange={(value) =>
+                                    setData('roleId', value ? parseInt(value) : undefined)
+                                }
+                                items={mapWithKeys(roles, (role) => [role.id, role.name])}
+                                placeholder="Perfil"
+                                required
+                            />
 
-                                <Button variant="outline" tabIndex={4} render={
-                                    <Link href={list()}>
-                                        <ChevronLeft size={16} /> Voltar
-                                    </Link>
-                                }/>
-                            </div>
-                        </>
-                    )}
-                </Form>
+                            <InputError message={errors.roleId} className="mt-2" />
+                        </div>
+                    </div>
 
+                    <div className="flex items-center gap-4 mt-6">
+                        <Button type="submit" loading={processing}>
+                            Convidar
+                        </Button>
+
+                        <Button
+                            variant="outline"
+                            render={<Link href={list()} />}
+                        >
+                            <ChevronLeft size={16} /> Voltar
+                        </Button>
+                    </div>
+                </form>
             </div>
-
         </AppLayout>
     );
 }

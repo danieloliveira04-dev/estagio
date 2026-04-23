@@ -15,19 +15,20 @@ import { getUsersAutocomplete } from '@/services/users';
 import { User } from '@/types';
 import * as React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Button } from './ui/button';
 import { User as UserIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export interface ComboboxUserProps {
-    placeholder?: string;
     value?: number | null;
     onChange?: (value: number | null) => void;
     showInput?: boolean;
+    children: (user?: User) => React.ReactNode;
+    className?: string;
 }
 
 type UserItem = User | { id: null; name: string; email?: string; photo?: string | null };
 
-export function ComboboxUser({ placeholder, value, onChange, showInput = true }: ComboboxUserProps) {
+export function PopoverComboboxUser({ value, onChange, showInput = false, children, className }: ComboboxUserProps) {
     const getInitials = useInitials();
     const [users, setUsers] = React.useState<User[]>([]);
 
@@ -61,44 +62,18 @@ export function ComboboxUser({ placeholder, value, onChange, showInput = true }:
         >
             <ComboboxTrigger
                 render={
-                    <Button
-                        type="button"
-                        variant="outline"
-                        className="block h-10 w-full text-left shrink"
-                    >
+                    <button type="button" onClick={(e) => e.stopPropagation()} className={cn("cursor-pointer", className)}>
                         <ComboboxValue>
                             {(val: number | null) => {
-                                if (!val) {
-                                    return (
-                                        <span className="text-muted-foreground">
-                                            {placeholder ?? 'Selecione...'}
-                                        </span>
-                                    );
-                                }
-
                                 const user = users.find((u) => u.id === val);
-
-                                if (!user) return null;
-
-                                return (
-                                    <div className="flex items-center gap-2">
-                                        <Avatar className="size-6 rounded-full">
-                                            <AvatarImage src={user.photo} alt={user.name} />
-                                            <AvatarFallback className="text-xs rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
-                                                {getInitials(user.name)}
-                                            </AvatarFallback>
-                                        </Avatar>
-
-                                        <span className="truncate">{user.name}</span>
-                                    </div>
-                                );
+                                return children(user);
                             }}
                         </ComboboxValue>
-                    </Button>
+                    </button>
                 }
             />
 
-            <ComboboxContent>
+            <ComboboxContent className="w-80" onClick={(e) => e.stopPropagation()}>
                 {showInput && (
                     <ComboboxInput showTrigger={false} />
                 )}
@@ -109,6 +84,7 @@ export function ComboboxUser({ placeholder, value, onChange, showInput = true }:
                         <ComboboxItem
                             key={item.id ?? 'unassigned'}
                             value={item.id}
+                            className="cursor-pointer"
                         >
                             <div className="flex w-full items-center gap-3 py-1">
                                 <Avatar className="h-8 w-8 rounded-full">

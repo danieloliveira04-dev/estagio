@@ -318,11 +318,12 @@ class ProjectController extends Controller {
 
     public function updateTask(Project $project, Task $task, Request $request) {
         $request->validate([
-            'title' => 'required|string|min:3',
+            'title' => 'nullable|string|min:3',
             'description' => 'nullable|string',
             'startDate' => 'nullable|date',
             'endDate' => 'nullable|date',
             'projectColumnId' => 'nullable|exists:projectColumns,id',
+            'projectMemberId' => 'nullable|exists:projectsMembers,id',
             'tags.*' => 'nullable|exists:tags,id', 
         ]);
 
@@ -334,14 +335,17 @@ class ProjectController extends Controller {
                 ? $project->columns->find($request->input('projectColumnId'))
                 : $task->column;
 
-            $data = [
-                'title' => $request->input('title'),
+            $data = $request->input();
+
+            $data = array_merge($data, [
                 'description' => $request->input('description'),
                 'startDate' => $request->date('startDate'),
                 'endDate' => $request->date('endDate'),
                 'projectColumnId' => $column?->id,
                 'taskStatusId' => $column?->taskStatusId,
-            ];
+                'projectMemberId' => $request->input('projectMemberId'),
+            ]);
+
 
             $task->update($data);
 

@@ -10,33 +10,28 @@ import { CSS } from "@dnd-kit/utilities";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import InputError from "@/components/input-error";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { GripVertical } from "lucide-react";
 import { TaskStatus } from "@/types";
+import { Select } from "@/components/select";
+import { mapWithKeys } from "@/lib/utils";
 
 interface Column {
   id: number;
   name: string;
-  status: string;
+  status?: string;
 }
 
 interface TemplateColumnsFormProps {
   onChange: (columns: Column[]) => void;
   status: TaskStatus[];
-  defaultValue?: Column[]; // 👈 valor inicial opcional
+  defaultValue?: Column[];
 }
 
 interface SortableColumnProps {
   column: Column;
   index: number;
-  updateColumn: (id: number, field: keyof Column, value: string) => void;
+  updateColumn: (id: number, field: keyof Column, value?: string) => void;
   removeColumn: (id: number) => void;
   status: TaskStatus[];
 }
@@ -89,21 +84,12 @@ function SortableColumn({
       {/* Status */}
       <div className="grid gap-2 mb-3">
         <Label>Status</Label>
-        <Select
-          onValueChange={(value) => updateColumn(column.id, "status", value)}
+        <Select 
           value={column.status}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Status da tarefa" />
-          </SelectTrigger>
-          <SelectContent>
-            {status.map((s) => (
-              <SelectItem key={s.id} value={String(s.id)}>
-                {s.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          onValueChange={(value) => updateColumn(column.id, "status", value ? String(value) : undefined)}
+          items={mapWithKeys(status, (status) => [status.id, status.name])}
+          placeholder="Status da tarefa"
+        />
       </div>
 
       <Button
@@ -145,7 +131,7 @@ export default function TemplateColumnsForm({
     }
   };
 
-  const updateColumn = (id: number, field: keyof Column, value: string) => {
+  const updateColumn = (id: number, field: keyof Column, value?: string) => {
     setColumns((cols) =>
       cols.map((c) => (c.id === id ? { ...c, [field]: value } : c))
     );

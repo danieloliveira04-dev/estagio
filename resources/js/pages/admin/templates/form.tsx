@@ -25,7 +25,7 @@ export default function AdminTemplateForm({ template, taskStatus, flash }: Admin
         columns: {
             id?: number;
             name: string;
-            taskStatusId: string;
+            taskStatusId?: string;
         }[];
     }>({
         name: template?.name || "",
@@ -77,7 +77,7 @@ export default function AdminTemplateForm({ template, taskStatus, flash }: Admin
                             defaultValue={template?.columns?.map(c => ({
                                 id: c.id,
                                 name: c.name,
-                                status: String(c.taskStatusId ?? "")
+                                status: c.taskStatusId ? String(c.taskStatusId) : undefined
                             })) ?? []}
                             onChange={(values) =>
                                 setData("columns", values.map((col) => ({

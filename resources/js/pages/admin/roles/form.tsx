@@ -7,10 +7,11 @@ import AppLayout from "@/layouts/app-layout";
 import { list, store, update } from "@/routes/admin/roles";
 import { BreadcrumbItem, FlashType, Role } from "@/types";
 import { Head, Link, useForm } from "@inertiajs/react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, LoaderCircle } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { roleTypeDescription } from "@/lib/descriptions";
+import { Select } from "@/components/select";
+import { mapWithKeys } from "@/lib/utils";
 
 interface AdminRoleFormProps {
     role?: Role; 
@@ -23,7 +24,7 @@ export default function AdminRoleForm({ role, types, flash }: AdminRoleFormProps
 
     const { data, setData, post, put, errors, processing } = useForm({
         name: role?.name || "",
-        type: role?.type || types[0] || "",
+        type: role?.type,
     });
 
     const submit = (e: React.FormEvent) => {
@@ -70,23 +71,20 @@ export default function AdminRoleForm({ role, types, flash }: AdminRoleFormProps
 
                         <div className="grid gap-2">
                             <Label htmlFor="type">Tipo *</Label>
-                            <Select value={data.type} onValueChange={value => setData("type", value)}>
-                                <SelectTrigger tabIndex={2}>
-                                    <SelectValue placeholder="Tipo" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {types.map((t) => (
-                                        <SelectItem key={t} value={t}>{roleTypeDescription(t)}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <Select 
+                                name="type"
+                                value={data.type}
+                                onValueChange={(value) => setData('type', value ? String(value) : undefined)}
+                                items={mapWithKeys(types, (type) => [type, roleTypeDescription(type)])}
+                                placeholder="Tipo"
+                                required
+                            />
                             <InputError message={errors.type} className="mt-2" />
                         </div>
                     </div>
 
                     <div className="flex items-center gap-4 mt-6">
-                        <Button type="submit" tabIndex={3}>
-                            {processing && <LoaderCircle size={16} className="animate-spin" />}
+                        <Button type="submit" tabIndex={3} loading={processing}>
                             {isEdit ? "Salvar" : "Criar"}
                         </Button>
 

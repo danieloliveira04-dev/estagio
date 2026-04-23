@@ -7,11 +7,12 @@ import AppLayout from "@/layouts/app-layout";
 import { list } from "@/routes/admin/users";
 import { BreadcrumbItem, FlashType, Role, User } from "@/types";
 import { Head, Link, useForm } from "@inertiajs/react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, LoaderCircle } from "lucide-react";
 import UserController from "@/actions/App/Http/Controllers/Admin/UserController";
+import { Select } from "@/components/select";
+import { mapWithKeys } from "@/lib/utils";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -36,7 +37,7 @@ export default function AdminUsersForm({ user, roles, flash }: AdminUsersFormPro
         email: user.email,
         password: '',
         phone: user.phone,
-        roleId: user.role.id,
+        roleId: user.role.id || undefined,
         status: user.status,
     });
 
@@ -117,18 +118,14 @@ export default function AdminUsersForm({ user, roles, flash }: AdminUsersFormPro
 
                         <div className="grid gap-2">
                             <Label htmlFor="role">Perfil *</Label>
-                            <Select value={String(data.roleId)} onValueChange={value => setData('roleId', parseInt(value))}>
-                                <SelectTrigger tabIndex={2}>
-                                    <SelectValue placeholder="Perfil" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {roles.map((role) => (
-                                        <SelectItem key={role.id} value={String(role.id)}>
-                                            {role.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <Select 
+                                name="roleId"
+                                value={data.roleId ? String(data.roleId) : undefined}
+                                onValueChange={(value) => setData('roleId', value ? parseInt(value) : undefined)}
+                                items={mapWithKeys(roles, (role) => [role.id, role.name])}
+                                placeholder="Perfil"
+                                required
+                            />
                             <InputError message={errors.roleId} className="mt-2" />
                         </div>
 
