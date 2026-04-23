@@ -9,6 +9,7 @@ import { useInitials } from "@/hooks/use-initials";
 import { useForm } from "@inertiajs/react";
 import { useEffect } from "react";
 import tasks from "@/routes/projects/tasks";
+import { useSortable } from "@dnd-kit/react/sortable";
 
 interface ProjectTaskProps {
     task: Task;
@@ -18,6 +19,18 @@ interface ProjectTaskProps {
 
 export default function ProjectTask({task, onClick, onDelete}: ProjectTaskProps) {
     const getInitials = useInitials();
+
+    const {ref, isDragging} = useSortable({
+        id: task.id,
+        index: task.position,
+        type: 'item',
+        accept: 'item',
+        group: `column-${task.projectColumnId}`,
+        data: {
+            position: task.position,
+            columnId: task.projectColumnId,
+        },
+    });
 
     const {data, setData, post, processing} = useForm({
         _method: 'put',
@@ -34,7 +47,7 @@ export default function ProjectTask({task, onClick, onDelete}: ProjectTaskProps)
     }, [data]);
 
     return (
-        <div className="bg-card shadow p-3 space-y-1 cursor-pointer hover:bg-neutral-200/10" onClick={onClick}>
+        <div ref={ref} data-dragging={isDragging} className="bg-card shadow p-3 space-y-1 cursor-pointer hover:bg-neutral-200/10" onClick={onClick}>
             <div className="flex items-start gap-1">
                 <h3 className="text-sm py-1 grow">{task.title}</h3>
 

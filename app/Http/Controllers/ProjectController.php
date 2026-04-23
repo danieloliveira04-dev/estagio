@@ -35,7 +35,7 @@ class ProjectController extends Controller {
             'columns' => function($columnsQuery) {
                 $columnsQuery->with([
                     'tasks' => function($tasksQuery) {
-                        $tasksQuery->with(['taskStatus', 'tags']);
+                        $tasksQuery->with(['taskStatus', 'tags'])->orderBy('position');
                     },
                 ])->orderBy('position');
             },
@@ -277,6 +277,7 @@ class ProjectController extends Controller {
 
             $data = [
                 'sequence' => $nextSequence,
+                'position' => $column->tasks->count() + 1,
                 'title' => $request->input('title'),
                 'description' => $request->input('description'),
                 'startDate' => $request->date('startDate'),
@@ -335,17 +336,17 @@ class ProjectController extends Controller {
                 ? $project->columns->find($request->input('projectColumnId'))
                 : $task->column;
 
-            $data = $request->input();
+            $data = collect($task->getFillable())
+                ->filter(fn ($field) => $request->exists($field))
+                ->mapWithKeys(function ($field) use ($request) {
+                    return [$field => $request->input($field)];
+                })
+                ->toArray();
 
             $data = array_merge($data, [
-                'description' => $request->input('description'),
-                'startDate' => $request->date('startDate'),
-                'endDate' => $request->date('endDate'),
                 'projectColumnId' => $column?->id,
                 'taskStatusId' => $column?->taskStatusId,
-                'projectMemberId' => $request->input('projectMemberId'),
             ]);
-
 
             $task->update($data);
 
@@ -404,6 +405,89 @@ class ProjectController extends Controller {
         } catch (\Exception $ex) {
             DB::rollBack();
         
+            LogHelper::exception($ex);
+
+            $msg = 'Ocorreu um erro ao tentar salvar os dados.';
+
+            if (!app()->environment('production')) {
+                $msg .= ' Detalhes: ' . $ex->getMessage();
+            }
+
+            return redirect()
+                ->to(route('projects.show', $project->id))
+                ->with('flash', [
+                    'type' => 'error',
+                    'message' => $msg,
+                ]);
+        }
+    }
+
+    public function moveTask(Project $project, Task $task, Request $request) {
+        $request->validate([
+            'projectColumnId' => 'required|exists:projectColumns,id',
+            'position' => 'required|integer|min:0',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $fromColumnId = $task->projectColumnId;
+            $toColumnId = $request->projectColumnId;
+            $toPosition = $request->position;
+
+            $task->update([
+                'projectColumnId' => $toColumnId,
+                'position' => $toPosition + 1,
+            ]);
+
+            $project->load([
+                'columns.tasks' => function ($q) {
+                    $q->orderBy('position', 'asc');
+                }
+            ]);
+
+            $fromColumn = $project->columns->firstWhere('id', $fromColumnId);
+            $toColumn = $project->columns->firstWhere('id', $toColumnId);
+
+            if($toColumn->taskStatusId) {
+                $task->update(['taskStatusId' => $toColumn->taskStatusId]);
+            }
+
+            if ($fromColumn) {
+                $fromColumn->tasks->values()->each(function ($item, $index) {
+                    $item->update([
+                        'position' => $index + 1,
+                    ]);
+                });
+            }
+
+            if ($toColumn) {
+                $toColumn->tasks->values()->each(function ($item, $index) {
+                    $item->update([
+                        'position' => $index + 1,
+                    ]);
+                });
+            }
+
+            $task->taskHistory()->create([
+                'userId' => $request->user()->id,
+                'action' => TaskHistory::ACTION_STATUS_CHANGED,
+                'description' => 'Tarefa movida de lugar',
+                'task' => $task,
+            ]);
+
+            DB::commit();
+
+            return redirect()
+                ->to(route('projects.show', $project->id))
+                ->with('flash', [
+                    'type' => 'success',
+                    'message' => 'Tarefa atualizada com sucesso.',
+                ]);
+
+        } catch (\Exception $ex) {
+            DB::rollBack();
+
             LogHelper::exception($ex);
 
             $msg = 'Ocorreu um erro ao tentar salvar os dados.';

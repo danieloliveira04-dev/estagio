@@ -24,7 +24,11 @@ class TaskHistory extends Model
 
     protected $table = 'taskHistory';
 
-    protected $fillable = ['id', 'taskId', 'startDate', 'endDate', 'taskStatusId', 'projectMemberId', 'userId', 'action', 'description'];
+    protected $fillable = ['id', 'taskId', 'startDate', 'endDate', 'taskStatusId', 'projectMemberId', 'userId', 'action', 'description', 'task'];
+
+    protected $casts = [
+        'task' => 'array',
+    ];
 
     //--
 

@@ -12,7 +12,7 @@ class Task extends Model
 
     protected $table = 'tasks';
 
-    protected $fillable = ['id', 'sequence', 'title', 'description', 'startDate', 'endDate', 'projectId', 'taskStatusId', 'projectColumnId', 'projectMemberId'];
+    protected $fillable = ['id', 'sequence', 'position', 'title', 'description', 'startDate', 'endDate', 'projectId', 'taskStatusId', 'projectColumnId', 'projectMemberId'];
 
     protected $appends = ['code'];
 

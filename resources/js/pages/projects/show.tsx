@@ -6,11 +6,12 @@ import ProjectLayout from '@/layouts/project/project-layout';
 import projects from '@/routes/projects';
 import { BreadcrumbItem, FlashType, Project, ProjectColumn as ProjectColumnType, Task as TaskType, SharedData, Tag, TaskStatus } from '@/types';
 import { Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { router } from '@inertiajs/react';
-import { moveColumn } from '@/actions/App/Http/Controllers/ProjectController';
+import { moveColumn, moveTask } from '@/actions/App/Http/Controllers/ProjectController';
 import { ProjectTaskDialog } from '@/layouts/project/dialog/project-task-dialog';
 import { ProjectTaskDeleteAlertDialog } from '@/layouts/project/dialog/project-task-delete-alert-dialog';
+import { DragDropProvider } from "@dnd-kit/react";
 
 interface ProjectShowProps {
     project: Project;
@@ -31,7 +32,8 @@ const breadcrumbs: BreadcrumbItem[] = [
     }
 ];
 
-export default function ProjectShow({ project, taskStatus, tags }: ProjectShowProps) {
+export default function ProjectShow({ project: initialProject, taskStatus, tags }: ProjectShowProps) {
+    const [project, setProject] = useState(initialProject);
 
     const [columnModal, setColumnModal] = useState(false);
     const [deleteColumnModal, setDeleteColumnModal] = useState(false);
@@ -41,6 +43,10 @@ export default function ProjectShow({ project, taskStatus, tags }: ProjectShowPr
 
     const [column, setColumn] = useState<ProjectColumnType>();
     const [task, setTask] = useState<Partial<TaskType>>();
+
+    useEffect(() => {
+        setProject(initialProject);
+    }, [initialProject]);
 
     const handleEditColumn = (column: ProjectColumnType) => {
         setColumn(column);
@@ -88,23 +94,125 @@ export default function ProjectShow({ project, taskStatus, tags }: ProjectShowPr
         setDeleteTaskModal(true);
     }
 
+    const handleMoveTask = (taskId: number, toColumnId: number, toPosition: number) => {
+        router.post(moveTask({ project: project.id, task: taskId }), {projectColumnId: toColumnId, position: toPosition}, {
+            preserveScroll: true,
+            preserveState: true,
+        });
+    }
+
     return (
         <ProjectLayout tab="preview" breadcrumbs={breadcrumbs}>
 
             <div className="pl-4 h-full overflow-auto" style={{maxHeight: 'calc(100vh - 175px)'}}>
                 <div className="flex gap-4 py-4">
-                    {project.columns?.map((column) => (
-                        <ProjectColumn 
-                            key={column.id}
-                            column={column} 
-                            onEdit={handleEditColumn}
-                            onDelete={handleDeleteColumn}
-                            onMove={handleMoveColumn}
-                            onTaskCreate={handleCreateTask}
-                            onTaskEdit={handleEditTask}
-                            onTaskDelete={handleDeleteTask}
-                        />
-                    ))}
+                    <DragDropProvider
+                        onDragEnd={(event) => {
+                            const { source, target } = event.operation;
+
+                            if(!source || !target) {
+                                return;
+                            }
+
+                            const taskId = source.id as number;
+                            const toColumnId = target.data.columnId;
+                            const toTaskPosition = target.data.position;
+
+                            handleMoveTask(taskId, toColumnId, toTaskPosition);
+                        }}
+                        onDragOver={(event) => {
+                            const { source, target } = event.operation;
+
+                            if(!source || !target) {
+                                return;
+                            }
+
+                            const taskId = source.id;
+                            const toTaskPosition = target.data.position;
+                            const fromColumnId = source.data.columnId;
+                            const toColumnId = target.data.columnId;
+
+                            // const fromTaskPosition = source.data.position;
+                            // console.log(`Dropped ${fromColumnId}/${fromTaskPosition} onto ${toColumnId}/${toTaskPosition}`);
+
+                            setProject(prev => {
+                                const task = prev.columns
+                                    .find(c => c.id === fromColumnId)
+                                    ?.tasks.find(t => t.id === taskId);
+
+                                console.log(task, fromColumnId);
+
+                                if (!task) return prev;
+
+                                const movedTask = {
+                                    ...task,
+                                    projectColumnId: toColumnId,
+                                };
+
+                                const columns = prev.columns.map(col => {
+                                    if (toColumnId === fromColumnId && col.id === toColumnId) {
+                                        const newTasks = [...col.tasks].filter(t => t.id !== taskId);
+
+                                        newTasks.splice(toTaskPosition, 0, movedTask);
+
+                                        return {
+                                            ...col,
+                                            tasks: newTasks.map((t, index) => ({
+                                                ...t,
+                                                position: index + 1,
+                                            })),
+                                        };
+                                    }
+
+                                    if (col.id === fromColumnId) {
+                                        return {
+                                            ...col,
+                                            tasks: col.tasks
+                                                .filter(t => t.id !== taskId)
+                                                .map((t, index) => ({
+                                                    ...t,
+                                                    position: index + 1,
+                                                })),
+                                        };
+                                    }
+
+                                    if (col.id === toColumnId) {
+                                        const newTasks = [...col.tasks];
+
+                                        newTasks.splice(toTaskPosition, 0, movedTask);
+
+                                        return {
+                                            ...col,
+                                            tasks: newTasks.map((t, index) => ({
+                                                ...t,
+                                                position: index + 1,
+                                            })),
+                                        };
+                                    }
+
+                                    return col;
+                                });
+
+                                return {
+                                    ...prev,
+                                    columns,
+                                };
+                            });
+                        }}
+                    >
+                        {project.columns.map((column) => (
+                            <ProjectColumn 
+                                key={column.id}
+                                column={column} 
+                                onEdit={handleEditColumn}
+                                onDelete={handleDeleteColumn}
+                                onMove={handleMoveColumn}
+                                onTaskCreate={handleCreateTask}
+                                onTaskEdit={handleEditTask}
+                                onTaskDelete={handleDeleteTask}
+                            />
+                        ))}
+                    </DragDropProvider>
 
                     <Button type="button" variant="outline" className="sticky top-0 justify-start min-w-[240px]" onClick={handleCreateColumn}>
                         <Plus />

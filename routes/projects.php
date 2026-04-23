@@ -39,6 +39,10 @@ Route::prefix('projects')->middleware('auth')->group(function() {
         ->scopeBindings()
         ->name('projects.tasks.delete');
 
+    Route::post('{project}/tasks/{task}/move', [ProjectController::class, 'moveTask'])
+        ->scopeBindings()
+        ->name('projects.tasks.move');
+
     // Members
     Route::get('{project}/members', [ProjectController::class, 'members'])
         ->name('projects.members');

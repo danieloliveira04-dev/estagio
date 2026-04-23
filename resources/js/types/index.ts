@@ -107,7 +107,7 @@ export interface Project {
     customer?: User;
     members?: ProjectMember[];
     invitations?: ProjectInvitation[];
-    columns?: ProjectColumn[];
+    columns: ProjectColumn[];
 };
 
 export interface ProjectColumn {
@@ -120,7 +120,7 @@ export interface ProjectColumn {
     updated_at: string;
     deleted_at?: string;
 
-    tasks?: Task[];
+    tasks: Task[];
     taskStatus?: TaskStatus;
 };
 
@@ -182,6 +182,7 @@ export interface Task {
     id: number;
     code: string;
     sequence: number;
+    position: number;
     title: string;
     description?: string;
     startDate?: Date;
