@@ -24,17 +24,18 @@ export interface ComboboxUserProps {
     showInput?: boolean;
     children: (user?: User) => React.ReactNode;
     className?: string;
+    filters?: Record<string, unknown>;
 }
 
 type UserItem = User | { id: null; name: string; email?: string; photo?: string | null };
 
-export function PopoverComboboxUser({ value, onChange, showInput = false, children, className }: ComboboxUserProps) {
+export function PopoverComboboxUser({ value, onChange, showInput = false, children, className, filters }: ComboboxUserProps) {
     const getInitials = useInitials();
     const [users, setUsers] = React.useState<User[]>([]);
 
     React.useEffect(() => {
         const getUsers = async () => {
-            const { data } = await getUsersAutocomplete();
+            const { data } = await getUsersAutocomplete(filters);
             setUsers(data);
         };
 

@@ -13,10 +13,15 @@ class ProjectMember extends Model
 
     protected $fillable = ['projectId', 'userId', 'roleId', 'description'];
 
+    protected $with = [
+        'user',
+        'role',
+    ];
+
     //--
 
     public function project() {
-        return $this->belongsTo(User::class, 'projectId');
+        return $this->belongsTo(Project::class, 'projectId');
     }
 
     public function user() {

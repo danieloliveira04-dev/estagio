@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ProjectController;
 use App\Http\Controllers\Admin\ProjectStatusController;
@@ -11,9 +12,11 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::prefix('admin')->middleware('auth')->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('admin/dashboard');
-    })->name('admin.dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])
+        ->name('admin.dashboard.index');
+
+    Route::get('dashboard/metrics', [DashboardController::class, 'metrics'])
+        ->name('admin.dashboard.metrics');
  
     //Users
     Route::get('users', [UserController::class, 'show'])

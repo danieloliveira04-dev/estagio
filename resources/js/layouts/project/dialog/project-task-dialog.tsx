@@ -1,7 +1,6 @@
 import { ComboboxMultiple } from '@/components/combobox-multiple';
 import { DateRangePicker } from '@/components/date-range-picker';
 import InputError from '@/components/input-error';
-import { PopoverComboboxUser } from '@/components/popover-combobox-user';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,7 +14,10 @@ import { store, update } from '@/routes/projects/tasks';
 import { Tag, Task } from '@/types';
 import { useForm } from '@inertiajs/react';
 import { User } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { getTask } from '@/services/tasks';
+import { TaskHistoryItem } from '@/components/task-history-item';
+import { PopoverComboboxProjectMember } from '@/components/popover-combobox-project-member';
 
 interface ProjectTaskDialogProps {
     open?: boolean;
@@ -89,7 +91,7 @@ export function ProjectTaskDialog({ open, onOpenChange, projectId, task, tags }:
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
 
-            <DialogContent className="sm:max-w-3xl">
+            <DialogContent className="sm:max-w-6xl">
                 <DialogHeader className="mb-2">
                      <DialogTitle>
                         {isEditing ? "Editar tarefa" : "Criar tarefa"}
@@ -98,7 +100,7 @@ export function ProjectTaskDialog({ open, onOpenChange, projectId, task, tags }:
 
                 <form onSubmit={submit} className="space-y-6">
                     <div className="flex gap-6">
-                        <div className="w-7/12 space-y-4">
+                        <div className="w-8/12 space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="title">Título *</Label>
                                 <Input name="title" value={data.title} onChange={(e) => setData('title', e.target.value)} required />
@@ -109,21 +111,27 @@ export function ProjectTaskDialog({ open, onOpenChange, projectId, task, tags }:
                                 <Label htmlFor="description">Descrição</Label>
                                 <Textarea name="description" value={data.description} onChange={(e) => setData('description', e.target.value)} />
                             </div>
+
+                            <div className="space-y-2">
+                                <h3 className="text-sm font-semibold">Histórico</h3>
+                                {task && <ProjectTaskHistory task={task} />}
+                            </div>
                         </div>
 
-                        <div className="w-5/12 shrink-0">
+                        <div className="w-4/12 shrink-0">
                             <Card className="py-4">
                                 <CardContent className="space-y-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="projectMemberId">Responsável</Label>
-                                        <PopoverComboboxUser
+                                        <PopoverComboboxProjectMember
+                                            projectId={projectId}
                                             value={data.projectMemberId}
                                             onChange={(value) => setData('projectMemberId', value ?? undefined)}
                                             className="w-full"
                                             showInput
                                         >
-                                            {(user) => {
-                                                const isEmpty = !user;
+                                            {(projectMember) => {
+                                                const isEmpty = !projectMember;
 
                                                 return (
                                                     <Button
@@ -140,21 +148,21 @@ export function ProjectTaskDialog({ open, onOpenChange, projectId, task, tags }:
                                                                 </AvatarFallback>
                                                             ) : (
                                                                 <>
-                                                                    <AvatarImage src={user.photo ?? undefined} alt={user.name} />
+                                                                    <AvatarImage src={projectMember.user.photo ?? undefined} alt={projectMember.user.name} />
                                                                     <AvatarFallback className="bg-muted text-muted-foreground">
-                                                                        {getInitials(user.name)}
+                                                                        {getInitials(projectMember.user.name)}
                                                                     </AvatarFallback>
                                                                 </>
                                                             )}
                                                         </Avatar>
 
                                                         <span className="font-medium truncate">
-                                                            {isEmpty ? 'Não atribuído' : user.name}
+                                                            {isEmpty ? 'Não atribuído' : projectMember.user.name}
                                                         </span>
                                                     </Button>
                                                 );
                                             }}
-                                        </PopoverComboboxUser>
+                                        </PopoverComboboxProjectMember>
                                     </div>
 
                                     <div className="space-y-2">
@@ -204,5 +212,30 @@ export function ProjectTaskDialog({ open, onOpenChange, projectId, task, tags }:
                 </form>
             </DialogContent>
         </Dialog>
+    );
+}
+
+interface ProjectTaskHistoryProps {
+    task: Task;
+}
+
+function ProjectTaskHistory({ task: {id, projectId} }: ProjectTaskHistoryProps) {
+    const [task, setTask] = useState<Task>();
+
+    useEffect(() => {
+        const get = async () => {
+            const { data } = await getTask(projectId, id);
+            setTask(data);
+        };
+
+        get();
+    }, []);
+
+    return (
+        <div className="space-y-2 [&>*]:last-of-type:pb-0! max-h-[140px] overflow-auto">
+            {task?.task_history.map((item) => (
+                <TaskHistoryItem key={item.id} taskHistory={item} />
+            ))}
+        </div>
     );
 }

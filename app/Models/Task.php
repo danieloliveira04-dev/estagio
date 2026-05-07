@@ -16,6 +16,11 @@ class Task extends Model
 
     protected $appends = ['code'];
 
+    protected $casts = [
+        'startDate' => 'date',
+        'endDate' => 'date',
+    ];
+
     public function getCodeAttribute() {
         return $this->project->prefix . '-' . $this->sequence;
     }

@@ -21,6 +21,8 @@ class TaskHistory extends Model
     public const ACTION_ARCHIVED = 'archived';               // tarefa arquivada
     public const ACTION_RESTORED = 'restored';               // tarefa restaurada
     public const ACTION_DELETED = 'deleted';                 // tarefa excluída
+    public const ACTION_COMPLETED = 'completed';                 // tarefa finalizada
+    public const ACTION_CANCELLED = 'cancelled';                 // tarefa cancelada
 
     protected $table = 'taskHistory';
 
@@ -32,11 +34,15 @@ class TaskHistory extends Model
 
     //--
 
-    public function tasks() {
-        return $this->belongsTo(Task::class, 'id', 'taskStatusId');
+    public function taskStatus() {
+        return $this->belongsTo(TaskStatus::class, 'id', 'taskStatusId');
     }
 
     public function assignee() {
         return $this->belongsTo(ProjectMember::class, 'projectMemberId');
+    }
+
+    public function user() {
+        return $this->belongsTo(User::class, 'userId');
     }
 }

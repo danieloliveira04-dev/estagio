@@ -290,4 +290,9 @@
         calc(var(--radius) * 2.2);
     --radius-4xl:
         calc(var(--radius) * 2.6);
+
+    --color-primary: #4F46E5;
+    --color-secondary: #6366F1;
+    --color-tertiary: #A54100;
+    --color-neutral: #777681;
 }

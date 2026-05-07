@@ -469,9 +469,16 @@ class ProjectController extends Controller {
                 });
             }
 
+            //--
+            $taskHistoryAction = TaskHistory::ACTION_STATUS_CHANGED;
+
+            if($toColumn->taskStatusId == env('taskStatusCompletedId')) {
+                $taskHistoryAction = TaskHistory::ACTION_COMPLETED;    
+            }
+
             $task->taskHistory()->create([
                 'userId' => $request->user()->id,
-                'action' => TaskHistory::ACTION_STATUS_CHANGED,
+                'action' => $taskHistoryAction,
                 'description' => 'Tarefa movida de lugar',
                 'task' => $task,
             ]);
@@ -505,6 +512,19 @@ class ProjectController extends Controller {
         }
     }
 
+    public function getTask(Project $project, Task $task) {
+        $task->load([
+            'taskHistory' => function($taskHistoryQuery) {
+                $taskHistoryQuery
+                    ->with(['user'])
+                    ->orderBy('created_at', 'desc');
+            },
+        ]);
+
+        return response()->json($task);
+    }
+
+    //-- Members
     public function members(Project $project) {
         $project->load([
             'customer',
@@ -848,6 +868,22 @@ class ProjectController extends Controller {
                     'message' => $msg,
                 ]);
         }
+    }
+
+    public function autocompleteMembers(Project $project, Request $request) {
+        $filters = $request->query();
+
+        $members = ProjectMember::query()
+            ->where('projectId', $project->id)
+            ->when($filters['query'] ?? false, function ($query, $text) {
+                $query->where('user.email', 'like', $text . '%');
+            })
+            ->when($filters['email'] ?? false, function ($query, $email) {
+                $query->where('user.email', $email);
+            })
+            ->get();
+
+        return response()->json($members);
     }
     
 

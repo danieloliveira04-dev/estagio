@@ -4,12 +4,12 @@ import { Task } from "@/types";
 import { Clock, Ellipsis, Trash2, User } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { PopoverComboboxUser } from "@/components/popover-combobox-user";
 import { useInitials } from "@/hooks/use-initials";
-import { useForm } from "@inertiajs/react";
-import { useEffect } from "react";
+import { router } from "@inertiajs/react";
+import { useEffect, useState } from "react";
 import tasks from "@/routes/projects/tasks";
 import { useSortable } from "@dnd-kit/react/sortable";
+import { PopoverComboboxProjectMember } from "@/components/popover-combobox-project-member";
 
 interface ProjectTaskProps {
     task: Task;
@@ -19,6 +19,7 @@ interface ProjectTaskProps {
 
 export default function ProjectTask({task, onClick, onDelete}: ProjectTaskProps) {
     const getInitials = useInitials();
+    const [projectMemberId, setProjectMemberId] = useState(task.projectMemberId);
 
     const {ref, isDragging} = useSortable({
         id: task.id,
@@ -32,19 +33,16 @@ export default function ProjectTask({task, onClick, onDelete}: ProjectTaskProps)
         },
     });
 
-    const {data, setData, post, processing} = useForm({
-        _method: 'put',
-        projectMemberId: task.projectMemberId, 
-        
-    });
-
     useEffect(() => {
-        if(data.projectMemberId != task.projectMemberId) {
-            post(tasks.update({ project: task.projectId, task: task.id }).url, {
+        if(projectMemberId != task.projectMemberId) {
+            router.post(tasks.update({ project: task.projectId, task: task.id }).url, {
+                _method: 'put',
+                projectMemberId: projectMemberId || null,
+            }, {
                 preserveScroll: true,
             });
         }
-    }, [data]);
+    }, [projectMemberId]);
 
     return (
         <div ref={ref} data-dragging={isDragging} className="bg-card shadow p-3 space-y-1 cursor-pointer hover:bg-neutral-200/10" onClick={onClick}>
@@ -78,9 +76,14 @@ export default function ProjectTask({task, onClick, onDelete}: ProjectTaskProps)
             <div className="flex items-end justify-between">
                 <span className="text-xs font-medium text-muted-foreground tracking-widest">{task.code}</span>
 
-                <PopoverComboboxUser value={task.projectMemberId} onChange={(value) => setData('projectMemberId', value ? value : undefined)} showInput>
-                    {(user) => {
-                        if(!user) {
+                <PopoverComboboxProjectMember 
+                    projectId={task.projectId}
+                    value={task.projectMemberId}
+                    onChange={(value) => setProjectMemberId(value || undefined)} 
+                    showInput
+                >
+                    {(projectMember) => {
+                        if(!projectMember) {
                             return (
                                 <Avatar className="size-7">
                                     <AvatarFallback className="bg-muted text-muted-foreground">
@@ -92,12 +95,12 @@ export default function ProjectTask({task, onClick, onDelete}: ProjectTaskProps)
 
                         return (
                             <Avatar className="size-7">
-                                <AvatarImage src={user.photo} alt={user.name} />
-                                <AvatarFallback className="bg-muted text-muted-foreground">{getInitials(user.name)}</AvatarFallback>
+                                <AvatarImage src={projectMember.user.photo} alt={projectMember.user.name} />
+                                <AvatarFallback className="bg-muted text-muted-foreground">{getInitials(projectMember.user.name)}</AvatarFallback>
                             </Avatar>
                         );
                     }}
-                </PopoverComboboxUser>
+                </PopoverComboboxProjectMember>
             </div>
         </div>
     );

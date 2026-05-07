@@ -106,7 +106,6 @@ export default function AdminProjectList({ projects }: AdminProjectListProps) {
                 <Heading title="Projetos" />
                 <Flash flash={flash} className="mb-6" />
 
-                {/* 🔎 Campo de busca + botão adicionar */}
                 <div className="flex items-center justify-between gap-10 mb-4">
                     <div className="relative w-[320px]">
                         <Search size={18} className="absolute top-1/2 start-2 -translate-y-1/2" />

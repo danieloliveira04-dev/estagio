@@ -31,6 +31,10 @@ Route::prefix('projects')->middleware('auth')->group(function() {
     Route::post('{project}/tasks', [ProjectController::class, 'storeTask'])
         ->name('projects.tasks.store');
 
+    Route::get('{project}/tasks/{task}', [ProjectController::class, 'getTask'])
+        ->scopeBindings()
+        ->name('projects.tasks.get');
+
     Route::put('{project}/tasks/{task}', [ProjectController::class, 'updateTask'])
         ->scopeBindings()
         ->name('projects.tasks.update');
@@ -57,6 +61,9 @@ Route::prefix('projects')->middleware('auth')->group(function() {
 
     Route::post('{project}/members/invite', [ProjectController::class, 'inviteMember'])
         ->name('projects.members.invite');
+
+    Route::get('{project}/members/autocomplete', [ProjectController::class, 'autocompleteMembers'])
+        ->name('projects.members.autocomplete');
 
     Route::delete('{project}/members/invite/{invitation}', [ProjectController::class, 'deleteInviteMember'])
         ->scopeBindings()

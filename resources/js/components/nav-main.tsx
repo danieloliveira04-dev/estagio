@@ -27,7 +27,7 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
           return (
             <Collapsible key={item.title} defaultOpen={item.isActive} className="group/collapsible">
               <SidebarMenuItem>
-                <CollapsibleTrigger>
+                <CollapsibleTrigger className="w-full">
                   <SidebarMenuButton tooltip={item.title}>
                     {Icon && <Icon />}
                     <span>{item.title}</span>

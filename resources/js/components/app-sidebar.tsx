@@ -2,7 +2,6 @@ import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { BookOpen, Folder, FolderKanban, LayoutGrid, LayoutTemplate, ListChecks, Tags, User, UserCog } from 'lucide-react';
@@ -14,11 +13,13 @@ import projectStatus from '@/routes/admin/projectStatus';
 import tags from '@/routes/admin/tags';
 import templates from '@/routes/admin/templates';
 import projects from '@/routes/admin/projects';
+import dashboard from '@/routes/admin/dashboard';
+import reports from '@/routes/admin/reports';
 
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: dashboard(),
+        href: dashboard.index(),
         icon: LayoutGrid,
     },
     {
@@ -55,6 +56,25 @@ const mainNavItems: NavItem[] = [
         title: 'Projetos',
         href: projects.list().url,
         icon: FolderKanban,
+    },
+    {
+        title: 'Relatórios',
+        href: '#',
+        icon: FolderKanban,
+        items: [
+            {
+                title: 'Produtividade',
+                href: reports.productivity.index().url,
+            },
+            {
+                title: 'Alocação de recursos',
+                href: reports.resourceAllocation.index().url,
+            },
+            {
+                title: 'Aderência a prazos',
+                href: reports.deadlineAdherence.index().url,
+            },
+        ],
     }
 ];
 
@@ -78,7 +98,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton
-                            render={<Link href={dashboard()} prefetch><AppLogo /></Link>}
+                            render={<Link href={dashboard.index()} prefetch><AppLogo /></Link>}
                             size="lg"
                         />
                     </SidebarMenuItem>

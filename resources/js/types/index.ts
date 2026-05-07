@@ -85,7 +85,7 @@ export interface ProjectMember {
     updated_at: string;
     deleted_at?: string;
 
-    user?: User;
+    user: User;
     role?: Role;
 };
 
@@ -198,6 +198,7 @@ export interface Task {
     task_status?: TaskStatus;
     column?: ProjectColumn;
     tags?: Tag[];
+    task_history: TaskHistory[];
 };
 
 export interface TaskStatus {
@@ -207,6 +208,41 @@ export interface TaskStatus {
     updated_at: string;
     deleted_at?: string;
 };
+
+export const TASK_HISTORY_ACTION = {
+  CREATED: 'created',
+  UPDATED: 'updated',
+  STATUS_CHANGED: 'status_changed',
+  ASSIGNED: 'assigned',
+  UNASSIGNED: 'unassigned',
+  REASSIGNED: 'reassigned',
+  COMMENTED: 'commented',
+  PRIORITY_CHANGED: 'priority_changed',
+  DUE_DATE_CHANGED: 'due_date_changed',
+  ARCHIVED: 'archived',
+  RESTORED: 'restored',
+  DELETED: 'deleted',
+  COMPLETED: 'completed',
+  CANCELLED: 'cancelled',
+} as const;
+
+export type TaskHistoryAction = typeof TASK_HISTORY_ACTION[keyof typeof TASK_HISTORY_ACTION];
+
+export interface TaskHistory {
+    id: number;
+    taskId: number;
+    startDate: Date;
+    endDate: Date;
+    taskStatusId: number;
+    projectMemberId: number;
+    userId: number;
+    action: TaskHistoryAction;
+    description: string;
+    task: Task;
+    created_at: string;
+
+    user: User;
+}
 
 export interface ProjectStatus {
     id: number;
@@ -233,4 +269,52 @@ export interface Template {
     created_at: string;
     updated_at: string;
     deleted_at?: string;
+};
+
+export interface DashboardMetrics {
+    activeProjects: {
+        value: number;
+        change: {
+            value: number;
+            type: 'neutral' | 'increase' | 'decrease';
+        };
+    };
+
+    openTasks: {
+        value: number;
+        change: {
+            value: number;
+            type: 'neutral' | 'increase' | 'decrease';
+        };
+    };
+
+    tasksDueToday: {
+        total: number;
+        completed: number;
+    };
+
+    tasksCompletionWeek: {
+        rate: number;
+        completed: number;
+        total: number;
+    };
+
+    weeklyChart: {
+        year: number;
+        week: number;
+        scope: number;
+        done: number;
+    }[];
+
+    criticalTasks: Task[];
+
+    teamPerformance: {
+        id: number;
+        name: string;
+        tasks: string;
+        workload: number;
+        index: number;
+    }[];
+
+    recentActivities: TaskHistory[];
 };

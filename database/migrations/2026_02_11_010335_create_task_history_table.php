@@ -19,20 +19,7 @@ return new class extends Migration
             $table->foreignId('taskStatusId')->nullable()->constrained('tasksStatus')->nullOnDelete();
             $table->foreignId('projectMemberId')->nullable()->constrained('projectsMembers');
             $table->foreignId('userId')->nullable()->constrained('users')->nullOnDelete();
-            $table->enum('action', [
-                'created',            // tarefa criada
-                'updated',            // tarefa atualizada (genérico)
-                'status_changed',     // status/coluna alterado
-                'assigned',           // tarefa atribuída a um usuário
-                'unassigned',         // tarefa removida de um usuário
-                'reassigned',         // tarefa reatribuída para outro usuário
-                'commented',          // comentário adicionado
-                'priority_changed',   // prioridade alterada
-                'due_date_changed',   // data de entrega alterada
-                'archived',           // tarefa arquivada
-                'restored',           // tarefa restaurada
-                'deleted'             // tarefa excluída
-            ]);
+            $table->string('action');
             $table->text('description')->nullable();
             $table->json('task');
             $table->timestamps();

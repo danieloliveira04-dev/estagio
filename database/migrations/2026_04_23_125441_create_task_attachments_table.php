@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('taskAttachments', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('projectId')->constrained()->cascadeOnDelete();
-            $table->foreignId('taskId')->constrained()->cascadeOnDelete();
+            $table->foreignId('projectId')->constrained('projects')->cascadeOnDelete();
+            $table->foreignId('taskId')->constrained('tasks')->cascadeOnDelete();
 
-            $table->foreignId('taskCommentId')->constrained('taskComments')->nullOnDelete();
+            $table->foreignId('taskCommentId')->nullable()->constrained('taskComments')->nullOnDelete();
 
             $table->foreignId('userId')->constrained('users'); 
 

@@ -236,6 +236,11 @@ class UserController extends Controller
             ->when($filters['email'] ?? false, function ($query, $email) {
                 $query->where('email', $email);
             })
+            ->when($filters['project'] ?? false, function ($query, $projectId) {
+                $query->whereHas('projectMembers', function ($q) use ($projectId) {
+                    $q->where('projectId', $projectId);
+                });
+            })
             ->get();
 
         return response()->json($users);
